@@ -29,7 +29,7 @@ cd Major_Grp51
 
 ```
 
-#### 2. Initiating virtual Environment
+### 2. Initiating virtual Environment
 
 Create a virtual environment for ease of runnning scripts, use python 3.11 as base for environment.
 
@@ -60,7 +60,7 @@ conda create -n major51 python=3.11
 conda activate major51
 ```
 
-#### 3. Install Packages
+### 3. Install Packages
 
 Install packages using below command:
 
