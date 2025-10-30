@@ -53,12 +53,6 @@ source .venv/bin/activate
 
 ```
 
-Alternatively conda can be used
-
-```bash
-conda create -n major51 python=3.11
-conda activate major51
-```
 
 ### 3. Install Packages
 
