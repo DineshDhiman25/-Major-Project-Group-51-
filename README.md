@@ -67,3 +67,25 @@ Install packages using below command:
 ```bash
 pip install -e .
 ```
+
+# Commit Instructions
+
+### 1. Adding and commiting
+
+```bash
+git add .
+git commit -m "Your message"
+```
+
+### 2. Important!! Git pull
+Do this always so that your changes are not deleted
+
+```bash
+git pull --rebase origin main
+```
+
+### 3. Then git push
+
+```bash
+git push
+```

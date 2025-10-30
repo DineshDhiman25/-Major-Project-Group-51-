@@ -16,7 +16,7 @@ authors = [
 ]
 
 readme = "README.md"
-license = { file = "LICENSE.txt" }
+license = { file = "LICENSE" }
 
 urls = { "Homepage" = "https://github.com/Fairtexas5/Major_Grp51" }
 
@@ -36,5 +36,6 @@ dependencies = [
   "shap>=0.48.0",
   "lime>=0.2.0.1",
   "openai>=1.108.1",
-  "seaborn>=0.13.2"
+  "seaborn>=0.13.2",
+  "poetry>=2.2.1"
 ]
