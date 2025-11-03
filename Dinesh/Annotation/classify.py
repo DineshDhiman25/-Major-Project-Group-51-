@@ -6,12 +6,14 @@ from tqdm import tqdm
 import time
 
 
+# Configuration Parameters
 INPUT_FILE = "translated_posts.csv"
 OUTPUT_FILE = "annotated_posts.csv"
 CHECKPOINT_INTERVAL = 50
 SLEEP_BETWEEN_CALLS = 0.5
 MODEL_NAME = "gemini-2.5-flash"
-MAX_ROWS = 5000
+MAX_ROWS = 1000
+START_ROW = 0  # NEW: Set the row position to start from (0-indexed)
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -25,7 +27,7 @@ if os.path.exists(OUTPUT_FILE):
     df_existing = pd.read_csv(OUTPUT_FILE)
     if "HRV" in df_existing.columns:
         processed = df_existing["HRV"].notna().sum()
-        print(f"Resuming from row {processed}/{len(df)}")
+        print(f"Found existing file with {processed} processed rows")
         df = df_existing.head(MAX_ROWS)
     else:
         df["HRV"] = None
@@ -34,6 +36,17 @@ else:
     df["HRV"] = None
     processed = 0
 
+# Apply START_ROW override
+if START_ROW > 0:
+    print(f"START_ROW parameter set to {START_ROW}. Overriding resume position.")
+    processed = START_ROW
+
+# Ensure we don't start beyond the dataset
+if processed >= len(df):
+    print(f"Starting position ({processed}) is >= dataset length ({len(df)}). Nothing to process.")
+    exit()
+
+print(f"Starting processing from row {processed}/{len(df)}")
 
 model = genai.GenerativeModel(MODEL_NAME)
 
@@ -61,7 +74,7 @@ English Translation: {row['post_translated']}
 ---
 """
 
-for i in tqdm(range(processed, len(df))):
+for i in tqdm(range(processed, len(df)), initial=processed, total=len(df)):
     try:
         row = df.iloc[i]
         prompt = make_prompt(row)
@@ -88,4 +101,5 @@ for i in tqdm(range(processed, len(df))):
     time.sleep(SLEEP_BETWEEN_CALLS)
 
 df.to_csv(OUTPUT_FILE, index=False)
-print(f"Saved final results to {OUTPUT_FILE}")
+print(f"✓ Saved final results to {OUTPUT_FILE}")
+print(f"✓ Total processed rows: {df['HRV'].notna().sum()}/{len(df)}")
