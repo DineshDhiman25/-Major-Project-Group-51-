@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethical Analysis of Human Rights Violations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.10.3/dist/Recharts.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        .hover-scale {
+            transition: transform 0.2s ease-in-out;
+        }
+        .hover-scale:hover {
+            transform: translateY(-2px);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .severity-low { background: #d1fae5; color: #065f46; }
+        .severity-medium { background: #fef3c7; color: #92400e; }
+        .severity-high { background: #fed7aa; color: #9a3412; }
+        .severity-extreme { background: #fee2e2; color: #991b1b; }
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo } = React;
+        
+        // Recharts check - use fallback if not loaded
+        let PieChart, Pie, Cell, ResponsiveContainer, Tooltip;
+        if (typeof Recharts !== 'undefined') {
+            ({ PieChart, Pie, Cell, ResponsiveContainer, Tooltip } = Recharts);
+        }
+
+        // Sample Data
+        const initialData = [
+            {
+                id: 1,
+                type: "Killing or injury of civilian",
+                description: "Airstrike in conflict zone resulting in civilian casualties",
+                explainability: "Denial of fundamental right to life",
+                severity: "Extreme",
+                region: "Syria",
+                ethicalAnalysis: "Unethical — breaches humanitarian laws and Geneva Conventions",
+                date: "2025-10-08"
+            },
+            {
+                id: 2,
+                type: "Destruction of civilian objects",
+                description: "Bombing of residential buildings and infrastructure",
+                explainability: "Violates protection of civilian property under international law",
+                severity: "High",
+                region: "Ukraine",
+                ethicalAnalysis: "Unethical — destroys essential civilian infrastructure",
+                date: "2025-09-20"
+            },
+            {
+                id: 3,
+                type: "Rape, Torture or execution",
+                description: "Systematic torture of detained individuals",
+                explainability: "Severe violation of human dignity and bodily autonomy",
+                severity: "Extreme",
+                region: "Myanmar",
+                ethicalAnalysis: "Unethical — constitutes crimes against humanity",
+                date: "2025-08-15"
+            },
+            {
+                id: 4,
+                type: "Mistreatment or torture of prisoners",
+                description: "Inhumane detention conditions and physical abuse",
+                explainability: "Violates Geneva Conventions on treatment of prisoners",
+                severity: "High",
+                region: "Iran",
+                ethicalAnalysis: "Unethical — breaches fundamental prisoner rights",
+                date: "2025-07-22"
+            },
+            {
+                id: 5,
+                type: "Killing or injury of civilian",
+                description: "Shooting of unarmed protesters during demonstration",
+                explainability: "Use of lethal force against peaceful civilians",
+                severity: "Extreme",
+                region: "Sudan",
+                ethicalAnalysis: "Unethical — violates right to life and peaceful assembly",
+                date: "2025-09-05"
+            }
+        ];
+
+        // Icons Component
+        const Icons = {
+            Scale: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>,
+            Globe: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            Peace: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>,
+            Plus: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>,
+            Download: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+            Search: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
+            Filter: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>,
+            Close: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>,
+            ChartBar: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+        };
+
+        // Add Violation Modal Component
+        const AddViolationModal = ({ isOpen, onClose, onAdd }) => {
+            const [formData, setFormData] = useState({
+                type: "Killing or injury of civilian",
+                description: "",
+                explainability: "",
+                severity: "Medium",
+                region: "",
+                ethicalAnalysis: "",
+                date: new Date().toISOString().split('T')[0]
+            });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onAdd(formData);
+                setFormData({
+                    type: "Killing or injury of civilian",
+                    description: "",
+                    explainability: "",
+                    severity: "Medium",
+                    region: "",
+                    ethicalAnalysis: "",
+                    date: new Date().toISOString().split('T')[0]
+                });
+                onClose();
+            };
+
+            if (!isOpen) return null;
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+                    <div className="glass-effect rounded-2xl p-8 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                <Icons.Plus />
+                                Add New Violation
+                            </h2>
+                            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+                                <Icons.Close />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Type of Violation</label>
+                                    <select 
+                                        value={formData.type}
+                                        onChange={(e) => setFormData({...formData, type: e.target.value})}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                                    >
+                                        <option value="Killing or injury of civilian">Killing or injury of civilian</option>
+                                        <option value="Destruction of civilian objects">Destruction of civilian objects</option>
+                                        <option value="Rape, Torture or execution">Rape, Torture or execution</option>
+                                        <option value="Mistreatment or torture of prisoners">Mistreatment or torture of prisoners</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Severity Level</label>
+                                    <select 
+                                        value={formData.severity}
+                                        onChange={(e) => setFormData({...formData, severity: e.target.value})}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                                    >
+                                        <option value="Low">Low</option>
+                                        <option value="Medium">Medium</option>
+                                        <option value="High">High</option>
+                                        <option value="Extreme">Extreme</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Region / Country</label>
+                                    <input 
+                                        type="text"
+                                        value={formData.region}
+                                        onChange={(e) => setFormData({...formData, region: e.target.value})}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                                        placeholder="e.g., India, Syria"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                                    <input 
+                                        type="date"
+                                        value={formData.date}
+                                        onChange={(e) => setFormData({...formData, date: e.target.value})}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                                <textarea 
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                                    rows="3"
+                                    placeholder="Detailed description of the violation"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Explainability / Reason</label>
+                                <textarea 
+                                    value={formData.explainability}
+                                    onChange={(e) => setFormData({...formData, explainability: e.target.value})}
+                                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                                    rows="2"
+                                    placeholder="Why it falls in this category"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Ethical Analysis Summary</label>
+                                <textarea 
+                                    value={formData.ethicalAnalysis}
+                                    onChange={(e) => setFormData({...formData, ethicalAnalysis: e.target.value})}
+                                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                                    rows="2"
+                                    placeholder="Ethical implications and analysis"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex gap-4 pt-4">
+                                <button 
+                                    type="submit"
+                                    className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all"
+                                >
+                                    Add Violation
+                                </button>
+                                <button 
+                                    type="button"
+                                    onClick={onClose}
+                                    className="px-6 py-3 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        // Summary Card Component
+        const SummaryCard = ({ icon, title, value, color }) => (
+            <div className={`glass-effect rounded-xl p-6 hover-scale border-l-4 ${color}`}>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-gray-600 text-sm font-medium">{title}</p>
+                        <p className="text-3xl font-bold text-gray-800 mt-2">{value}</p>
+                    </div>
+                    <div className="text-purple-600">
+                        {icon}
+                    </div>
+                </div>
+            </div>
+        );
+
+        // HRV Detection Card Component
+        const HRVDetectionCard = () => {
+            const [inputText, setInputText] = useState("");
+            const [result, setResult] = useState(null);
+            const [isProcessing, setIsProcessing] = useState(false);
+
+            const detectHRV = (text) => {
+                // Keywords for different violation types
+                const keywords = {
+                    "Killing or injury of civilian": ["kill", "murder", "death", "casualt", "civilian", "shooting", "massacre", "wound", "injur", "fatal"],
+                    "Destruction of civilian objects": ["destroy", "demolish", "bombing", "airstrike", "building", "infrastructure", "property", "home", "hospital", "school"],
+                    "Rape, Torture or execution": ["rape", "sexual", "torture", "execution", "abuse", "assault", "violence", "mutilat", "cruel", "inhuman"],
+                    "Mistreatment or torture of prisoners": ["prisoner", "detain", "custody", "jail", "torture", "mistreat", "abuse", "inhuman", "condition", "captive"]
+                };
+
+                const lowerText = text.toLowerCase();
+                let detectedType = null;
+                let confidence = 0;
+                let matchedKeywords = [];
+
+                // Check each category
+                for (const [type, words] of Object.entries(keywords)) {
+                    const matches = words.filter(word => lowerText.includes(word));
+                    if (matches.length > confidence) {
+                        confidence = matches.length;
+                        detectedType = type;
+                        matchedKeywords = matches;
+                    }
+                }
+
+                // Determine if it's a violation
+                const isViolation = confidence > 0;
+
+                return {
+                    isViolation,
+                    type: detectedType,
+                    confidence: Math.min((confidence / 3) * 100, 100),
+                    matchedKeywords,
+                    explainability: isViolation 
+                        ? `This text appears to describe a ${detectedType} violation. Detected keywords: ${matchedKeywords.join(", ")}. This suggests potential human rights concerns related to ${detectedType.toLowerCase()}.`
+                        : "No clear indicators of human rights violations detected in the provided text. The content does not match typical patterns associated with known violation categories."
+                };
+            };
+
+            const handleProcess = () => {
+                if (!inputText.trim()) {
+                    alert("Please enter some text to analyze");
+                    return;
+                }
+
+                setIsProcessing(true);
+                
+                // Simulate processing delay
+                setTimeout(() => {
+                    const detectionResult = detectHRV(inputText);
+                    setResult(detectionResult);
+                    setIsProcessing(false);
+                }, 1000);
+            };
+
+            return (
+                <div className="glass-effect rounded-2xl p-8 mb-8 fade-in">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                        🔍 Human Rights Violation Detection
+                    </h2>
+
+                    <div className="space-y-6">
+                        {/* Input Section */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Enter Text to Analyze
+                            </label>
+                            <textarea 
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none resize-none"
+                                rows="4"
+                                placeholder="Enter social media content, news article, or any text describing a potential human rights violation..."
+                            />
+                        </div>
+
+                        {/* Process Button */}
+                        <div className="flex justify-center">
+                            <button 
+                                onClick={handleProcess}
+                                disabled={isProcessing}
+                                className={`bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+                                    isProcessing ? 'opacity-50 cursor-not-allowed' : 'hover:from-purple-700 hover:to-indigo-700'
+                                }`}
+                            >
+                                {isProcessing ? (
+                                    <>
+                                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Processing...
+                                    </>
+                                ) : (
+                                    <>
+                                        🔍 Analyze Text
+                                    </>
+                                )}
+                            </button>
+                        </div>
+
+                        {/* Results Section */}
+                        {result && (
+                            <div className="space-y-4 mt-6 animate-fadeIn">
+                                {/* Violation Status */}
+                                <div className={`p-6 rounded-lg border-2 ${
+                                    result.isViolation 
+                                        ? 'bg-red-50 border-red-300' 
+                                        : 'bg-green-50 border-green-300'
+                                }`}>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <span className="text-3xl">
+                                            {result.isViolation ? '⚠️' : '✅'}
+                                        </span>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-gray-800">
+                                                {result.isViolation 
+                                                    ? 'Human Rights Violation Detected' 
+                                                    : 'No Violation Detected'}
+                                            </h3>
+                                            {result.isViolation && (
+                                                <p className="text-sm font-semibold text-gray-700">
+                                                    Type: {result.type} | Confidence: {result.confidence.toFixed(1)}%
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Explainability */}
+                                <div className="bg-blue-50 border-2 border-blue-200 p-6 rounded-lg">
+                                    <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                        💡 Explainability
+                                    </h4>
+                                    <p className="text-gray-700 leading-relaxed">
+                                        {result.explainability}
+                                    </p>
+                                </div>
+
+                                {/* Clear Button */}
+                                <div className="flex justify-center">
+                                    <button 
+                                        onClick={() => {
+                                            setInputText("");
+                                            setResult(null);
+                                        }}
+                                        className="px-6 py-2 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition-all"
+                                    >
+                                        Clear & Try Again
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [violations, setViolations] = useState(initialData);
+            const [searchTerm, setSearchTerm] = useState("");
+            const [filterType, setFilterType] = useState("All");
+            const [filterSeverity, setFilterSeverity] = useState("All");
+            const [sortBy, setSortBy] = useState("date");
+            const [isModalOpen, setIsModalOpen] = useState(false);
+
+            // Filtered and sorted data
+            const filteredData = useMemo(() => {
+                let filtered = violations.filter(violation => {
+                    const matchesSearch = 
+                        violation.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        violation.region.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        violation.type.toLowerCase().includes(searchTerm.toLowerCase());
+                    const matchesType = filterType === "All" || violation.type === filterType;
+                    const matchesSeverity = filterSeverity === "All" || violation.severity === filterSeverity;
+                    return matchesSearch && matchesType && matchesSeverity;
+                });
+
+                // Sort
+                filtered.sort((a, b) => {
+                    if (sortBy === "date") {
+                        return new Date(b.date) - new Date(a.date);
+                    } else if (sortBy === "severity") {
+                        const severityOrder = { "Extreme": 4, "High": 3, "Medium": 2, "Low": 1 };
+                        return severityOrder[b.severity] - severityOrder[a.severity];
+                    }
+                    return 0;
+                });
+
+                return filtered;
+            }, [violations, searchTerm, filterType, filterSeverity, sortBy]);
+
+            // Statistics
+            const stats = useMemo(() => {
+                const typeCount = {};
+                violations.forEach(v => {
+                    typeCount[v.type] = (typeCount[v.type] || 0) + 1;
+                });
+                const mostCommon = Object.keys(typeCount).reduce((a, b) => 
+                    typeCount[a] > typeCount[b] ? a : b, "N/A"
+                );
+
+                const severityScores = { "Low": 1, "Medium": 2, "High": 3, "Extreme": 4 };
+                const avgSeverity = violations.reduce((sum, v) => 
+                    sum + severityScores[v.severity], 0
+                ) / violations.length;
+
+                return {
+                    total: violations.length,
+                    mostCommon,
+                    avgSeverity: avgSeverity.toFixed(1)
+                };
+            }, [violations]);
+
+            // Chart data
+            const chartData = useMemo(() => {
+                const typeCount = {};
+                violations.forEach(v => {
+                    typeCount[v.type] = (typeCount[v.type] || 0) + 1;
+                });
+                return Object.keys(typeCount).map(key => ({
+                    name: key,
+                    value: typeCount[key]
+                }));
+            }, [violations]);
+
+            const COLORS = ['#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6'];
+
+            const handleAddViolation = (formData) => {
+                const newViolation = {
+                    id: violations.length + 1,
+                    ...formData
+                };
+                setViolations([...violations, newViolation]);
+            };
+
+            const handleDownloadReport = () => {
+                const reportContent = `
+ETHICAL ANALYSIS OF HUMAN RIGHTS VIOLATIONS
+Generated on: ${new Date().toLocaleDateString()}
+
+SUMMARY STATISTICS:
+- Total Cases: ${stats.total}
+- Most Common Violation: ${stats.mostCommon}
+- Average Severity Score: ${stats.avgSeverity}/4.0
+
+DETAILED VIOLATIONS:
+${violations.map((v, i) => `
+${i + 1}. ${v.type} - ${v.region} (${v.date})
+   Severity: ${v.severity}
+   Description: ${v.description}
+   Explainability: ${v.explainability}
+   Ethical Analysis: ${v.ethicalAnalysis}
+`).join('\n')}
+                `;
+                
+                const blob = new Blob([reportContent], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'human-rights-violations-report.txt';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            };
+
+            return (
+                <div className="min-h-screen py-8 px-4">
+                    <div className="max-w-7xl mx-auto">
+                        {/* Header Section */}
+                        <div className="text-center mb-12 fade-in">
+                            <div className="flex items-center justify-center gap-4 mb-4">
+                                <div className="text-white"><Icons.Scale /></div>
+                                <h1 className="text-5xl font-bold text-white">
+                                    Ethical Analysis of Human Rights Violations
+                                </h1>
+                                <div className="text-white"><Icons.Peace /></div>
+                            </div>
+                            <p className="text-xl text-purple-100 mt-4">
+                                Understanding the Nature, Type, and Ethical Dimensions of Violations
+                            </p>
+                        </div>
+
+                        {/* Summary Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 fade-in">
+                            <SummaryCard 
+                                icon={<Icons.ChartBar />}
+                                title="Total Cases"
+                                value={stats.total}
+                                color="border-blue-500"
+                            />
+                            <SummaryCard 
+                                icon={<Icons.Filter />}
+                                title="Most Common Type"
+                                value={stats.mostCommon}
+                                color="border-purple-500"
+                            />
+                            <SummaryCard 
+                                icon={<Icons.Scale />}
+                                title="Avg Severity"
+                                value={`${stats.avgSeverity} / 4.0`}
+                                color="border-red-500"
+                            />
+                        </div>
+
+                        {/* HRV Detection Section */}
+                        <HRVDetectionCard />
+
+                        {/* Charts Section */}
+                        <div className="glass-effect rounded-2xl p-8 mb-8 fade-in">
+                            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                <Icons.ChartBar />
+                                Violation Type Distribution
+                            </h2>
+                            <div className="h-80">
+                                {typeof Recharts !== 'undefined' ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={chartData}
+                                                cx="50%"
+                                                cy="50%"
+                                                labelLine={false}
+                                                label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                                outerRadius={100}
+                                                fill="#8884d8"
+                                                dataKey="value"
+                                            >
+                                                {chartData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div className="flex items-center justify-center h-full">
+                                        <div className="text-center">
+                                            <p className="text-gray-600 mb-4">Chart visualization</p>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                {chartData.map((item, index) => (
+                                                    <div key={index} className="bg-gray-100 p-4 rounded-lg">
+                                                        <p className="font-bold text-lg" style={{color: COLORS[index]}}>{item.name}</p>
+                                                        <p className="text-2xl font-bold text-gray-800">{item.value}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Controls Section */}
+                        <div className="glass-effect rounded-2xl p-6 mb-8 fade-in">
+                            <div className="flex flex-wrap gap-4 items-center justify-between">
+                                {/* Search */}
+                                <div className="flex-1 min-w-[200px]">
+                                    <div className="relative">
+                                        <input 
+                                            type="text"
+                                            placeholder="Search violations..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                                        />
+                                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                            <Icons.Search />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Filters */}
+                                <select 
+                                    value={filterType}
+                                    onChange={(e) => setFilterType(e.target.value)}
+                                    className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                                >
+                                    <option value="All">All Types</option>
+                                    <option value="Killing or injury of civilian">Killing or injury of civilian</option>
+                                    <option value="Destruction of civilian objects">Destruction of civilian objects</option>
+                                    <option value="Rape, Torture or execution">Rape, Torture or execution</option>
+                                    <option value="Mistreatment or torture of prisoners">Mistreatment or torture of prisoners</option>
+                                </select>
+
+                                <select 
+                                    value={filterSeverity}
+                                    onChange={(e) => setFilterSeverity(e.target.value)}
+                                    className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                                >
+                                    <option value="All">All Severity</option>
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                    <option value="Extreme">Extreme</option>
+                                </select>
+
+                                <select 
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                                >
+                                    <option value="date">Sort by Date</option>
+                                    <option value="severity">Sort by Severity</option>
+                                </select>
+
+                                <button 
+                                    onClick={() => setIsModalOpen(true)}
+                                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all flex items-center gap-2"
+                                >
+                                    <Icons.Plus />
+                                    Add Violation
+                                </button>
+
+                                <button 
+                                    onClick={handleDownloadReport}
+                                    className="bg-gradient-to-r from-green-600 to-teal-600 text-white px-6 py-2 rounded-lg font-semibold hover:from-green-700 hover:to-teal-700 transition-all flex items-center gap-2"
+                                >
+                                    <Icons.Download />
+                                    Download Report
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Violations Table */}
+                        <div className="glass-effect rounded-2xl p-6 mb-8 fade-in overflow-x-auto">
+                            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                <Icons.Globe />
+                                Violations Database
+                            </h2>
+                            <div className="overflow-x-auto">
+                                <table className="w-full min-w-[1000px]">
+                                    <thead>
+                                        <tr className="border-b-2 border-gray-200">
+                                            <th className="text-left py-3 px-4 font-semibold text-gray-700">Sr. No.</th>
+                                            <th className="text-left py-3 px-4 font-semibold text-gray-700">Type</th>
+                                            <th className="text-left py-3 px-4 font-semibold text-gray-700">Description</th>
+                                            <th className="text-left py-3 px-4 font-semibold text-gray-700">Explainability</th>
+                                            <th className="text-left py-3 px-4 font-semibold text-gray-700">Severity</th>
+                                            <th className="text-left py-3 px-4 font-semibold text-gray-700">Region</th>
+                                            <th className="text-left py-3 px-4 font-semibold text-gray-700">Ethical Analysis</th>
+                                            <th className="text-left py-3 px-4 font-semibold text-gray-700">Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredData.map((violation, index) => (
+                                            <tr key={violation.id} className="border-b border-gray-100 hover:bg-purple-50 transition-colors">
+                                                <td className="py-4 px-4 font-medium text-gray-700">{index + 1}</td>
+                                                <td className="py-4 px-4">
+                                                    <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                                        {violation.type}
+                                                    </span>
+                                                </td>
+                                                <td className="py-4 px-4 text-gray-700 max-w-xs">{violation.description}</td>
+                                                <td className="py-4 px-4 text-gray-600 text-sm max-w-xs">{violation.explainability}</td>
+                                                <td className="py-4 px-4">
+                                                    <span className={`badge severity-${violation.severity.toLowerCase()}`}>
+                                                        {violation.severity}
+                                                    </span>
+                                                </td>
+                                                <td className="py-4 px-4 font-medium text-gray-700">{violation.region}</td>
+                                                <td className="py-4 px-4 text-gray-600 text-sm max-w-xs">{violation.ethicalAnalysis}</td>
+                                                <td className="py-4 px-4 text-gray-600 text-sm">{violation.date}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="mt-4 text-sm text-gray-600">
+                                Showing {filteredData.length} of {violations.length} violations
+                            </div>
+                        </div>
+
+                    
+
+                        {/* Footer */}
+                        <footer className="glass-effect rounded-2xl p-6 text-center fade-in">
+                            <p className="text-gray-700 font-semibold text-lg">
+                                Major Project: Ethical Analysis of Human Rights Violations
+                            </p>
+                            <p className="text-gray-600 mt-2">
+                                Presented by: <span className="font-semibold">Group 51</span>
+                            </p>
+                            <p className="text-gray-600">
+                                B.Tech Computer Science 
+                            </p>
+                            <p className="text-gray-500 text-sm mt-2">
+                                Institution: [Jaypee University Of information Technology]
+                            </p>
+                        </footer>
+                    </div>
+
+                    {/* Modal */}
+                    <AddViolationModal 
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                        onAdd={handleAddViolation}
+                    />
+                </div>
+            );
+        };
+
+        // Render App
+        const root = document.getElementById('root');
+        if (root) {
+            try {
+                ReactDOM.render(<App />, root);
+                console.log('App rendered successfully!');
+            } catch (error) {
+                console.error('Error rendering app:', error);
+                root.innerHTML = '<div style="padding: 20px; text-align: center;"><h1 style="color: red;">Error loading application. Please check console for details.</h1></div>';
+            }
+        } else {
+            console.error('Root element not found!');
+        }
+    </script>
+</body>
+</html>
