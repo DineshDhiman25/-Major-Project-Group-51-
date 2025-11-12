@@ -1,6 +1,6 @@
 Aditya/dataset/
 
-
+.DS_Store
 un.txt
 # Byte-compiled / optimized / DLL files
 __pycache__/
