@@ -2,7 +2,7 @@ import gradio as gr
 import pandas as pd
 import os
 
-CSV_FILE = 'Csv/posts_5_translated.csv'
+CSV_FILE = 'Csv/posts_6_translated.csv'
 
 def load_data():
     if os.path.exists(CSV_FILE):

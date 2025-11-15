@@ -67,7 +67,7 @@ pip install -e .
 ### 1. Adding and commiting
 
 ```bash
-git add .
+git add <Your Folder Name>
 git commit -m "Your message"
 ```
 
@@ -75,7 +75,7 @@ git commit -m "Your message"
 Do this always so that your changes are not deleted
 
 ```bash
-git pull --rebase origin main
+git pull
 ```
 
 ### 3. Then git push

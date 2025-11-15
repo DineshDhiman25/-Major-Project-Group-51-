@@ -24,16 +24,11 @@ dependencies = [
   "torch>=2.8.0",
   "pandas>=2.3.2",
   "ipython-autotime>=0.3.2",
-  "openai",
-  "anthropic>=0.68.0",
   "transformers>=4.56.2",
   "scikit-learn>=1.7.2",
-  "shap>=0.48.0",
-  "lime>=0.2.0.1",
-  "openai>=1.108.1",
   "seaborn>=0.13.2",
   "ipykernel",
-  "google-generativeai",
   "python-dotenv (>=1.2.1,<2.0.0)",
-  "tqdm (>=4.67.1,<5.0.0)"
+  "tqdm (>=4.67.1,<5.0.0)",
+  "gradio (>=5.49.1,<6.0.0)"
 ]
