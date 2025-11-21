@@ -2,6 +2,8 @@ Aditya/dataset/
 Aditya/Annotation
 .DS_Store
 un.txt
+
+.vscode
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
