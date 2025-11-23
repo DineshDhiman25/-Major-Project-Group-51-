@@ -2,7 +2,7 @@ import gradio as gr
 import pandas as pd
 import os
 
-CSV_FILE = '/Users/aditsg/Code/Major_Grp51/Aditya/Annotation/annotated/Translated/posts_2_translated.csv'
+CSV_FILE = '/Users/aditsg/Code/Major_Grp51/Aditya/Annotation/annotated/Translated/posts_4_translated.csv'
 
 def load_data():
     if os.path.exists(CSV_FILE):
