@@ -2,7 +2,7 @@ import gradio as gr
 import pandas as pd
 import os
 
-CSV_FILE = '/Users/aditsg/Code/Major_Grp51/Aditya/Annotation/annotated/Translated/posts_4_translated.csv'
+CSV_FILE = '/Users/aditsg/Code/Major_Grp51/Aditya/Annotation/Translated_Posts_NLLB.csv'
 
 def load_data():
     if os.path.exists(CSV_FILE):
@@ -27,8 +27,9 @@ def save_data(df):
     df.to_csv(CSV_FILE, index=False)
     return "Data saved successfully!"
 
-def annotate_post(row_idx, label, violation_type, english_trans_text, df):
+def annotate_post(row_idx, label, violation_type, russian_post, english_trans_text, df):
     if row_idx < len(df):
+        df.at[row_idx, 'Post'] = russian_post
         df.at[row_idx, 'Label'] = label
         df.at[row_idx, 'Trans'] = english_trans_text
         if isinstance(violation_type, list):
@@ -146,7 +147,7 @@ with gr.Blocks(title="Human Rights Violation Annotation Tool") as demo:
                 value=initial_russian,
                 label="Russian Post",
                 lines=4,
-                interactive=False,
+                interactive=True,
                 show_copy_button=True
             )
 
@@ -184,7 +185,7 @@ with gr.Blocks(title="Human Rights Violation Annotation Tool") as demo:
         dataset_stats = gr.Markdown(value=preview_data())
     annotate_btn.click(
         annotate_post,
-        inputs=[row_idx_state, label_choice, type_choice, english_trans, df_state],
+        inputs=[row_idx_state, label_choice, type_choice, russian_post, english_trans, df_state],
         outputs=[row_idx_state, df_state, post_number, russian_post, english_trans, status, label_choice, type_choice]
     )
 
