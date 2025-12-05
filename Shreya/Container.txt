@@ -1,0 +1,15 @@
+    <div class="container">
+        <!-- existing content above -->
+
+        <h2>Try a quick interaction</h2>
+        <button onclick="showMessage()" style="padding:10px 20px; font-size:16px;">
+            Click to rate this project
+        </button>
+    </div>
+
+    <script>
+        function showMessage() {
+            alert("Thanks for checking my Git project!");
+        }
+    </script>
+</body>
