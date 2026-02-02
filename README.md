@@ -1,6 +1,8 @@
 # Major Grp51
 ###### Active Repository for Major Project of Group 51 (2026–2027)
 
+![Logo](src/static/imgs/logo.png)
+
 ## Ethical Analysis of Human Rights Violations on Social Media
 
 This project develops a structured framework for **identifying, annotating, and analyzing human rights violations** in social media discussions. Since official reports are often delayed, censored, or inaccessible, digital accounts can serve as early indicators—but they are often fragmentary, culturally constrained, and prone to misinformation.
