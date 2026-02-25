@@ -2,7 +2,7 @@ import gradio as gr
 import pandas as pd
 import os
 
-CSV_FILE = 'Csv/posts_5_translated.csv'
+CSV_FILE = 'Csv/hrv_train_venezuela.csv'
 
 def load_data():
     if os.path.exists(CSV_FILE):
@@ -13,6 +13,10 @@ def load_data():
     for col in required_cols:
         if col not in df.columns:
             df[col] = None
+    # Ensure string columns stay as object dtype even when all values are NaN.
+    # Without this, pandas infers them as float64 and crashes when writing strings.
+    for col in ['Label', 'Trans', 'Type']:
+        df[col] = df[col].astype(object)
     next_row_idx = 0
     for idx, row in df.iterrows():
         if pd.isna(row.get('Label', None)) or row.get('Label', '') == '':
@@ -144,10 +148,9 @@ with gr.Blocks(title="Human Rights Violation Annotation Tool") as demo:
             )
             russian_post = gr.Textbox(
                 value=initial_russian,
-                label="Russian Post",
+                label="Venezuela Post",
                 lines=4,
-                interactive=False,
-                show_copy_button=True
+                interactive=False
             )
 
             english_trans = gr.Textbox(
