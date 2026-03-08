@@ -59,9 +59,9 @@ LORA_R = 8
 LORA_ALPHA = 16
 
 LEARNING_RATE = 2e-5  # Reduced from 1e-4 for stability
-WARMUP_RATIO = 0.1    # Increased from 0.05 for smoother warmup
-WEIGHT_DECAY = 0.01   # Reduced from 0.05
-MAX_GRAD_NORM = 1.0   # Increased from 0.3 to avoid over-clipping
+WARMUP_RATIO = 0.1
+WEIGHT_DECAY = 0.01
+MAX_GRAD_NORM = 1.0
 NUM_EPOCHS = 3
 
 print(f"Model: {MODEL_NAME}")
@@ -75,6 +75,9 @@ import torch.nn.functional as F
 from transformers import Trainer
 
 class FocalLossCausalLMTrainer(Trainer):
+    '''
+    
+    '''
     def __init__(self, *args, focal_gamma=2.0, yes_token_id=None, no_token_id=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.focal_gamma = focal_gamma
@@ -123,7 +126,6 @@ class FocalLossCausalLMTrainer(Trainer):
             classification_logits.append(binary_logits)
             classification_labels.append(binary_label)
 
-        # CRITICAL FIX: Always return (loss, outputs) when return_outputs=True
         if len(classification_logits) == 0:
             loss = F.cross_entropy(
                 shift_logits.view(-1, vocab_size),
@@ -148,15 +150,11 @@ import re
 def compute_classification_metrics(eval_pred):
     predictions, labels = eval_pred
 
-    # For token-level metrics (approximate)
-    # In practice, you'd need to generate full responses
     if isinstance(predictions, tuple):
         predictions = predictions[0]
 
-    # Get token predictions
     pred_tokens = np.argmax(predictions, axis=-1)
 
-    # Flatten and filter out masked tokens
     predictions_flat = pred_tokens.flatten()
     labels_flat = labels.flatten()
 
@@ -164,7 +162,6 @@ def compute_classification_metrics(eval_pred):
     predictions_filtered = predictions_flat[mask]
     labels_filtered = labels_flat[mask]
 
-    # Calculate metrics
     accuracy = accuracy_score(labels_filtered, predictions_filtered)
 
     return {
@@ -699,7 +696,7 @@ model = AutoModelForCausalLM.from_pretrained(
     quantization_config=bnb_config,
     device_map="auto",
     trust_remote_code=True,
-    torch_dtype=torch.float16,  # Changed from bfloat16 to float16 for P100
+    dtype=torch.float16,  # Changed from bfloat16 to float16 for P100
 )
 
 model = prepare_model_for_kbit_training(model)

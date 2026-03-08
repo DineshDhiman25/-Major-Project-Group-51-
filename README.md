@@ -1,5 +1,5 @@
 # Major Grp51
-###### Active Repository for Major Project of Group 51 (2026–2027)
+###### Active Repository for Major Project of Group 51 (2025–2026)
 
 ![Logo](src/static/imgs/logo.png)
 
@@ -21,8 +21,6 @@ The goal is to transform raw social media discourse into a **credible, respectfu
 ## Project Structure
 
 ### Core Components
-
-#### Aditya/
 Contains the primary development work including model fine-tuning and data processing:
 
 | Component | Description |
@@ -36,15 +34,7 @@ Contains the primary development work including model fine-tuning and data proce
 ##### Key Data Files
 - `hrv_train.jsonl`, `hrv_val.jsonl`, `hrv_test.jsonl` - Training, validation, and test splits
 - `hrv_yes.csv`, `hrv_no.csv` - Labeled human rights violation data
-- `hrv_finetune_alpaca.jsonl`, `hrv_finetune_llama31.jsonl` - Model-specific fine-tuning formats
 
-#### Dinesh/
-Contains annotation work and classification visualization:
-
-| Component | Description |
-|-----------|-------------|
-| **Annotation/** | Annotation data and processing scripts including `app.py` |
-| **Human_rights_class.png** | Visualization of human rights classification framework |
 
 ---
 
@@ -61,17 +51,6 @@ The project fine-tunes the following base models for human rights violation dete
 - **Focal Loss** - Handles class imbalance in human rights violation detection
 - **Assistant-only Masking** - Focuses training on model responses
 - **WandB Integration** - Comprehensive experiment tracking
-
----
-
-## Team Members
-
-| Name | Role |
-|------|------|
-| Shreya Srivastava | Team Member |
-| Aditya Singh | Team Member |
-| Dinesh Dhiman | Team Member |
-| Arshit Dogra | Team Member |
 
 ---
 

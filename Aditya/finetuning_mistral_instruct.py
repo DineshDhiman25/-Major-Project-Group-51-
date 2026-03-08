@@ -952,7 +952,7 @@ model = AutoModelForCausalLM.from_pretrained(
     quantization_config=bnb_config,
     device_map="auto",
     trust_remote_code=True,
-    torch_dtype=torch.float16,  # Changed from bfloat16 to float16 for P100
+    dtype=torch.float16,  # Changed from bfloat16 to float16 for P100
 )
 
 model = prepare_model_for_kbit_training(model)

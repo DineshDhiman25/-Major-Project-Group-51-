@@ -47,8 +47,8 @@ if torch.cuda.is_available():
 """## 5. Model and Data Paths Configuration"""
 
 # Model and dataset paths
-MODEL_NAME = "/kaggle/input/llama31-8b-instruct-fp16/transformers/default/1"  # Using Meta-Llama-3.1-8B-Instruct-FP16
-DATA_PATH = "/kaggle/input/hrv-finetune/hrv_train.jsonl"
+MODEL_NAME = "/kaggle/input/llama3-1fp16/transformers/default/1"
+DATA_PATH = "/kaggle/input/hrv-finetune/hrv_train_fixed.jsonl"
 VAL_DATA_PATH = "/kaggle/input/hrv-finetune/hrv_val.jsonl"
 
 # Hyperparameters optimized for P100 16GB
@@ -57,7 +57,7 @@ LANGUAGE_BALANCE = False
 
 # LoRA Configuration - Optimized for P100
 LORA_MODE = "attention_only"
-LORA_R = 8
+LORA_R = 16
 LORA_ALPHA = 16
 
 LEARNING_RATE = 2e-5  # Reduced from 1e-4 for stability
@@ -86,7 +86,7 @@ class FocalLossCausalLMTrainer(Trainer):
         self.focal_gamma = focal_gamma
         self.yes_token_id = yes_token_id
         self.no_token_id = no_token_id
-        self.alpha = torch.tensor([0.15, 0.85])  # Give more weight to "Yes" (violation) class
+        self.alpha = torch.tensor([0.10, 0.90])  # Give more weight to "Yes" (violation) class
         self._alpha_device_set = False
 
         if yes_token_id is None or no_token_id is None:
@@ -183,14 +183,17 @@ def compute_classification_metrics(eval_pred):
 def evaluate_hrv_classification(model, tokenizer, eval_dataset, device='cuda', max_new_tokens=50):
     """
     Evaluate the model on HRV classification task.
-    Generates responses and extracts Yes/No predictions.
-    Uses Llama 3.1 Instruct format for generation.
+    Uses LOGIT-BASED predictions with threshold tuning for better recall.
     """
     model.eval()
-    predictions = []
     ground_truths = []
+    yes_probs = []  # Store probabilities for threshold tuning
 
-    print(f"Evaluating on {len(eval_dataset)} samples...")
+    # Get token IDs
+    yes_token_id = tokenizer.encode("Yes", add_special_tokens=False)[0]
+    no_token_id = tokenizer.encode("No", add_special_tokens=False)[0]
+
+    print(f"Evaluating on {len(eval_dataset)} samples with logit-based prediction...")
 
     for i, sample in enumerate(eval_dataset):
         if i % 20 == 0:
@@ -207,9 +210,6 @@ def evaluate_hrv_classification(model, tokenizer, eval_dataset, device='cuda', m
         user_messages = [m for m in messages if m['role'] != 'assistant']
 
         # Format using Llama 3.1 Instruct template
-        # <|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system}<|eot_id|>
-        # <|start_header_id|>user<|end_header_id|>\n\n{user}<|eot_id|>
-        # <|start_header_id|>assistant<|end_header_id|>\n\n
         prompt = "<|begin_of_text|>"
         for msg in user_messages:
             role = msg['role']
@@ -221,43 +221,62 @@ def evaluate_hrv_classification(model, tokenizer, eval_dataset, device='cuda', m
         inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=1400)
         inputs = {k: v.to(device) for k, v in inputs.items()}
 
-        # Generate
+        # Get logits for first token prediction
         with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                do_sample=False,
-                pad_token_id=tokenizer.pad_token_id,
-                eos_token_id=tokenizer.eos_token_id,
-            )
+            outputs = model(**inputs)
+            next_token_logits = outputs.logits[0, -1, :]  # Last position logits
 
-        # Decode response
-        generated_text = tokenizer.decode(outputs[0][inputs['input_ids'].shape[1]:], skip_special_tokens=True)
+            # Extract Yes/No logits and compute probability
+            yes_logit = next_token_logits[yes_token_id].item()
+            no_logit = next_token_logits[no_token_id].item()
 
-        # Extract prediction
-        generated_text_lower = generated_text.strip().lower()
-        if generated_text_lower.startswith('yes'):
-            pred = 1
-        elif generated_text_lower.startswith('no'):
-            pred = 0
-        else:
-            # If unclear, default to 0 (no violation)
-            pred = 0
+            # Softmax over Yes/No only
+            probs = torch.softmax(torch.tensor([no_logit, yes_logit]), dim=0)
+            yes_prob = probs[1].item()
+            yes_probs.append(yes_prob)
 
-        predictions.append(pred)
-
-    # Calculate metrics
+    # Find optimal threshold using validation data
     from sklearn.metrics import precision_recall_fscore_support, accuracy_score, classification_report, confusion_matrix
 
+    print(f"\n{'='*60}")
+    print("Threshold Tuning Results:")
+    print(f"{'='*60}")
+
+    best_f1 = 0
+    best_threshold = 0.5
+    best_results = None
+
+    for threshold in [0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60]:
+        predictions = [1 if p >= threshold else 0 for p in yes_probs]
+        accuracy = accuracy_score(ground_truths, predictions)
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            ground_truths, predictions, average='binary', pos_label=1, zero_division=0
+        )
+        conf_matrix = confusion_matrix(ground_truths, predictions)
+
+        print(f"Threshold {threshold:.2f}: Acc={accuracy:.3f}, P={precision:.3f}, R={recall:.3f}, F1={f1:.3f} | TN={conf_matrix[0][0]}, FP={conf_matrix[0][1]}, FN={conf_matrix[1][0]}, TP={conf_matrix[1][1]}")
+
+        if f1 > best_f1:
+            best_f1 = f1
+            best_threshold = threshold
+            best_results = {
+                'accuracy': accuracy,
+                'precision': precision,
+                'recall': recall,
+                'f1': f1,
+                'confusion_matrix': conf_matrix.tolist(),
+                'predictions': predictions
+            }
+
+    # Use best threshold
+    predictions = [1 if p >= best_threshold else 0 for p in yes_probs]
     accuracy = accuracy_score(ground_truths, predictions)
     precision, recall, f1, _ = precision_recall_fscore_support(ground_truths, predictions, average='binary', pos_label=1)
-
-    # Detailed report
     report = classification_report(ground_truths, predictions, target_names=['No Violation', 'Violation'], output_dict=True)
     conf_matrix = confusion_matrix(ground_truths, predictions)
 
     print(f"\n{'='*60}")
-    print("HRV Classification Evaluation Results:")
+    print(f"BEST RESULTS (threshold={best_threshold:.2f}):")
     print(f"{'='*60}")
     print(f"Accuracy: {accuracy:.4f}")
     print(f"Precision (Violation): {precision:.4f}")
@@ -276,7 +295,9 @@ def evaluate_hrv_classification(model, tokenizer, eval_dataset, device='cuda', m
         'confusion_matrix': conf_matrix.tolist(),
         'classification_report': report,
         'predictions': predictions,
-        'ground_truths': ground_truths
+        'ground_truths': ground_truths,
+        'yes_probs': yes_probs,
+        'best_threshold': best_threshold
     }
 
 """## 6. Utility Functions"""
@@ -516,7 +537,7 @@ class DataCollatorForCompletionOnly:
 """## 10. Training Monitor Callback"""
 
 # Enhanced Callback for Comprehensive Monitoring
-class EnhancedWandbCallback(TrainerCallback):
+class EnhancedCallback(TrainerCallback):
 
     def __init__(self):
         self.train_losses = []
@@ -675,7 +696,7 @@ sys.stdout.flush()
 train_data, train_stats = load_jsonl_data(
     DATA_PATH,
     tokenizer,
-    undersample_ratio=1.5  # Target 1.5:1 ratio for better recall on violations
+    undersample_ratio=1  # Target 1.5:1 ratio for better recall on violations
 )
 val_data, val_stats = load_jsonl_data(
     VAL_DATA_PATH,
@@ -725,7 +746,7 @@ if USE_4BIT_QUANTIZATION:
         quantization_config=bnb_config,
         device_map="auto",
         trust_remote_code=True,
-        torch_dtype=torch.float16,
+        dtype=torch.float16,
     )
     model = prepare_model_for_kbit_training(model)
 else:
@@ -735,7 +756,7 @@ else:
         MODEL_NAME,
         device_map="auto",
         trust_remote_code=True,
-        torch_dtype=torch.float16,
+        dtype=torch.float16,
     )
 
 model.config.use_cache = False
@@ -746,7 +767,7 @@ print("\nConfiguring LoRA...")
 sys.stdout.flush()
 target_modules = get_lora_target_modules(LORA_MODE)
 
-effective_lora_r = min(LORA_R, 8)
+effective_lora_r = min(LORA_R, 16)
 effective_lora_alpha = min(LORA_ALPHA, 16)
 
 peft_config = LoraConfig(
@@ -786,7 +807,8 @@ if 'yes' not in yes_decoded.lower() or 'no' not in no_decoded.lower():
 training_args = TrainingArguments(
     output_dir="/kaggle/working/llama31-finetuned",
     run_name="llama31-8b-instruct-hrv-finetuning",
-    num_train_epochs=4,  # Increased from 2 for better convergence
+    num_train_epochs=6,  # Increased from 2 for better convergence
+    report_to="none",
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     gradient_accumulation_steps=8,
@@ -821,7 +843,7 @@ data_collator = DataCollatorForCompletionOnly(tokenizer)
 print("\nInitializing Trainer with enhanced callbacks...")
 sys.stdout.flush()
 
-enhanced_callback = EnhancedWandbCallback()
+enhanced_callback = EnhancedCallback()
 
 trainer = FocalLossCausalLMTrainer(
     model=model,
