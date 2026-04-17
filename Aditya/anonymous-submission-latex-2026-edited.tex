@@ -1,0 +1,88 @@
+% File: anonymous-submission-latex-2026-edited.tex
+\documentclass[letterpaper]{article}
+\usepackage[submission]{aaai2026}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\usepackage[hyphens]{url}
+\usepackage{graphicx}
+\urlstyle{rm}
+\def\UrlFont{\rm}
+\usepackage{natbib}
+\usepackage{caption}
+\frenchspacing
+\setlength{\pdfpagewidth}{8.5in}
+\setlength{\pdfpageheight}{11in}
+\pdfinfo{
+/TemplateVersion (2026.1)
+}
+
+\setcounter{secnumdepth}{0}
+
+\title{Detecting Human Rights Violations on Social Media Using Machine Learning}
+\author{Anonymous Submission}
+\affiliations{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The ongoing Russia--Ukraine conflict has highlighted the critical role of social media as a channel for real-time, uncensored information dissemination from active conflict zones. In environments where traditional media is restricted and information warfare is prevalent, social media platforms have become essential sources for documenting events on the ground. Anonymous and publicly accessible platforms, in particular, offer unique opportunities for monitoring and identifying potential human rights violations (HRVs).
+
+This study examines large-scale data collected from Telegram, a prominent platform for independent news consumption in post-Soviet regions. We curate a corpus of posts from public channels focused on political and war-related content and analyze them to identify references to potential HRVs. Using a language-model-based text classification framework, we perform automated detection of HRV-related content within Telegram posts. Our approach demonstrates a substantial improvement in detection performance compared to baseline multilingual language models, achieving an $F_2$ score of 0.71.
+
+To support further research, we release two datasets: (1) a large-scale corpus comprising over 1.6 million Telegram posts and (2) a sentence-level annotated dataset indicating the presence of human rights violations. All data are situated within the context of the Russia--Ukraine war. We argue that our findings and resources offer valuable contributions for NGOs, policymakers, and researchers by enabling scalable identification and documentation of potential human rights violations in conflict settings.
+\end{abstract}
+
+\section{Introduction}
+Human rights violations are often reported first through fragmented and highly time-sensitive social media posts rather than through formal documentation channels. This is especially true in active conflict settings, where journalism may be restricted, state narratives may dominate public communication, and evidence can disappear quickly. For these reasons, social platforms have become an important source of early signals for researchers, civil society organizations, and policy actors who need scalable methods for monitoring harmful events.
+
+In this paper, we study the detection of human rights violations in Telegram posts related to the Russia--Ukraine war. Telegram is particularly relevant because it is widely used for political commentary, war reporting, reposting frontline updates, and distributing eyewitness material in post-Soviet information environments. The central challenge is that not every war-related post describes an HRV. Many posts are propagandistic, strategic, or purely informational. A useful system must therefore separate genuine descriptions of civilian harm or abuse from background war discourse.
+
+Our project contributes along three directions. First, we organize a Telegram-centered data pipeline for collecting and filtering posts related to conflict reporting. Second, we construct annotated HRV classification data in a conversational instruction-following format suitable for modern large language models. Third, we fine-tune open-weight instruction-tuned models and adapt them for class-imbalanced binary classification, with an emphasis on recall-oriented detection. The resulting draft paper is grounded in the project repository and aligns the AAAI anonymous submission template with the current implementation.
+
+\section{Task Definition}
+We formulate the problem as binary text classification: given a Telegram post, determine whether it describes a human rights violation. In the project annotation setup, positive examples include posts describing harm to civilians, destruction of civilian property or infrastructure, torture, execution, sexual violence, and abuse of detainees. Negative examples include military commentary, political rhetoric, threats, propaganda, strategic updates, and other war-related content that does not directly describe an HRV event.
+
+This framing is intentionally conservative. The model is not designed to establish legal liability or verify factual truth. Instead, it identifies posts that are likely to warrant further review by human analysts. The output should therefore be interpreted as a screening signal for triage and documentation, not as a definitive legal judgment.
+
+\section{Data Collection and Annotation}
+The broader project centers on Telegram data collected from public channels focused on politics, conflict updates, and war-related reporting. According to the project draft materials, the full collection exceeds 1.6 million posts. The repository snapshot used for development contains representative raw channel exports, filtered identifiers, and curated supervised splits. In the current local snapshot, two Telegram export files contribute 60{,}000 raw posts in total, while the paper draft targets the larger corpus assembled across the full data collection pipeline.
+
+For supervised learning, the repository contains instruction-style JSONL datasets in which each sample consists of a user prompt containing a post and an assistant response beginning with either ``Yes'' or ``No.'' The currently available split files contain 3{,}655 training instances in the corrected training set, 159 validation instances, and 99 test instances. The training data are class imbalanced, with the positive HRV class forming a minority of the examples. In the corrected training split, 406 of 3{,}655 instances are positive, which motivates recall-aware optimization choices.
+
+The annotation design reflects the practical complexity of conflict-language interpretation. Some posts explicitly mention civilian casualties or abuse, while others embed such information inside translated text, reposted headlines, or mixed-language narratives. The dataset therefore captures a range of English and Cyrillic content, including translated or bilingual posts, and is structured to support instruction-following models rather than conventional sentence-only classifiers.
+
+\section{Modeling Approach}
+Our modeling pipeline fine-tunes open-weight instruction-tuned large language models for HRV detection. The repository includes experiments built on Mistral-7B-Instruct-v0.3, Meta Llama 3.1 Instruct, and OpenHermes-2.5-Mistral-7B. Rather than training from scratch, we use parameter-efficient fine-tuning with LoRA so that the task can be adapted within limited hardware budgets while preserving the base models' language understanding capabilities.
+
+The project implementation treats the task as a constrained generative decision problem. Each input is formatted as a chat-style interaction, and the model is trained to produce an assistant answer beginning with either ``Yes'' or ``No.'' This design makes the data compatible with instruction-tuned models while still supporting straightforward extraction of binary predictions at evaluation time.
+
+To address severe class imbalance, the training code combines two strategies. First, it uses focal loss over the decision tokens corresponding to ``Yes'' and ``No,'' assigning greater weight to positive HRV examples. Second, it applies undersampling of the majority class in parts of the training pipeline to improve recall for rare violations. The implementation also uses assistant-only masking so that optimization focuses on the generated answer rather than the entire prompt, along with quantized loading and gradient-efficient fine-tuning for practical training on limited GPU memory.
+
+\section{Experimental Setup}
+The OpenHermes configuration in the repository provides a representative view of the training setup used in this project. The model is loaded in 4-bit quantized form, combined with LoRA adapters on attention layers, and optimized with small batch sizes and gradient accumulation. The sequence length is set to support long Telegram posts, and the evaluation pipeline recovers binary predictions from model generations by inspecting whether the response begins with ``Yes'' or ``No.''
+
+Although several models are explored in the repository, the overall experimental objective is consistent: maximize useful HRV detection performance under class imbalance. Since downstream users are more likely to care about surfacing potential violations than about maximizing raw accuracy, the paper emphasizes the $F_2$ score, which weights recall more heavily than precision. This choice better matches the monitoring and triage use case in which missing a true violation is often more costly than reviewing an additional false positive.
+
+\section{Results}
+The current project draft reports an $F_2$ score of 0.71 for HRV detection, with fine-tuned language-model approaches outperforming baseline multilingual models. This result suggests that instruction-tuned open models can learn task-specific cues for identifying posts that describe civilian harm, torture, execution, or related abuses more effectively than general-purpose baselines without domain adaptation.
+
+The repository structure also supports the qualitative interpretation of this improvement. Positive examples frequently require contextual reasoning over noisy text, translation artifacts, and conflict-specific phrasing rather than simple keyword matching. Fine-tuned models appear better able to connect these cues to the HRV label, especially when a post mixes event description with commentary or embeds the relevant information inside quoted text.
+
+At the same time, the task remains difficult. False positives may arise when posts discuss military threats or political rhetoric without describing actual abuse, while false negatives may occur when euphemistic or propagandistic language obscures the underlying event. These challenges reinforce the need to present model outputs as decision support rather than as standalone evidence.
+
+\section{Discussion and Limitations}
+This work should be understood as an applied monitoring system for identifying posts that deserve closer human inspection. Social media data from conflict environments are noisy, adversarial, multilingual, and difficult to verify. A model can detect patterns associated with HRVs, but it cannot independently confirm whether the described event happened, who was responsible, or whether the account is manipulated or incomplete.
+
+Several limitations follow. First, the repository snapshot does not include the full large-scale corpus referenced in the draft abstract, so the current paper text distinguishes between the broader project collection and the locally available development subset. Second, the labeled data reflect annotation guidelines and sampling choices that may bias the learned notion of an HRV. Third, Telegram content is shaped by propaganda, reposting, and selective visibility, which means that any learned classifier will inherit some properties of the source channels from which data were collected.
+
+Despite these limitations, the task remains valuable. In practice, human rights organizations and policy researchers often need scalable first-pass systems that can reduce a large stream of posts into a smaller review queue. A transparent, recall-oriented classifier can support that workflow when paired with careful human oversight and explicit uncertainty about the status of any single post.
+
+\section{Conclusion}
+We present an AAAI-formatted anonymous draft for a project on detecting human rights violations in Telegram posts related to the Russia--Ukraine war. The paper frames the task as recall-oriented binary classification, describes the current repository-backed data and modeling pipeline, and aligns the narrative with the project's fine-tuning setup based on instruction-tuned open language models. The draft emphasizes both the practical value and the ethical limitations of automated HRV detection.
+
+The next stage of writing can extend this version with figures, a table of dataset statistics, a model comparison table, and a formal reference section. As a working submission draft, however, this version now replaces the AAAI instructional placeholder text with a paper structure that is specific to the repository and ready for further technical refinement.
+
+\end{document}
