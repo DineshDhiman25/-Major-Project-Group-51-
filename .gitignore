@@ -1,7 +1,7 @@
-Src/
 HRV LLM Detection
-.DS_Store
+*/.DS_Store
 un.txt
+.DS_Store
 
 .vscode
 # Byte-compiled / optimized / DLL files

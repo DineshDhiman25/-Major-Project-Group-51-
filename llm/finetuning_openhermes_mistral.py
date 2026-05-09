@@ -44,10 +44,49 @@ if torch.cuda.is_available():
 
 """## 5. Model and Data Paths Configuration"""
 
-# Model and dataset paths
+# Model path
 MODEL_NAME = "/kaggle/input/openhermes25/transformers/default/1"  # Using OpenHermes-2.5-Mistral-7B
-DATA_PATH = "/kaggle/input/hrv-finetune/hrv_train.jsonl"
-VAL_DATA_PATH = "/kaggle/input/hrv-finetune/hrv_val.jsonl"
+
+# ---------------------------------------------------------------------------
+# Dataset registry  (--dataset option in CLI / main.py menu)
+# ---------------------------------------------------------------------------
+DATASET_OPTIONS = {
+    "combined": {
+        "train": "src/hrv_train.jsonl",
+        "test":  "src/hrv_test.jsonl",
+        "label": "Combined (src/)",
+    },
+    "iran": {
+        "train": "data/jsonl/hrv_iran_train.jsonl",
+        "test":  "data/jsonl/hrv_iran_test.jsonl",
+        "label": "Iran",
+    },
+    "russia": {
+        "train": "data/jsonl/hrv_rus_train.jsonl",
+        "test":  "data/jsonl/hrv_rus_test.jsonl",
+        "label": "Russia",
+    },
+    "venezuela": {
+        "train": "data/jsonl/hrv_vene_train.jsonl",
+        "test":  "data/jsonl/hrv_vene_test.jsonl",
+        "label": "Venezuela",
+    },
+}
+
+import argparse as _argparse
+_parser = _argparse.ArgumentParser(add_help=False)
+_parser.add_argument(
+    "--dataset",
+    choices=list(DATASET_OPTIONS.keys()),
+    default="combined",
+    help="Dataset to use for training/evaluation.",
+)
+_args, _ = _parser.parse_known_args()
+_ds = DATASET_OPTIONS[_args.dataset]
+DATA_PATH     = _ds["train"]
+VAL_DATA_PATH = _ds["test"]
+print(f"[dataset] Using '{_args.dataset}' ({_ds['label']}): train={DATA_PATH}, test={VAL_DATA_PATH}")
+
 
 # Hyperparameters optimized for P100 16GB
 MAX_SEQ_LENGTH = 1536
@@ -634,256 +673,264 @@ def get_lora_target_modules(mode="attention_only"):
 """## 12. Main Training Function"""
 
 
-print("Loading tokenizer...")
-sys.stdout.flush()
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
-
-# Set padding token
-if tokenizer.pad_token is None:
-    tokenizer.pad_token = tokenizer.eos_token
-tokenizer.padding_side = "right"
-
-print("\nLoading datasets...")
-sys.stdout.flush()
-train_data, train_stats = load_jsonl_data(
-    DATA_PATH,
-    tokenizer,
-    undersample_ratio=1.5  # Target 1.5:1 ratio for better recall on violations
-)
-val_data, val_stats = load_jsonl_data(
-    VAL_DATA_PATH,
-    tokenizer,
-    max_samples=500,
-    undersample_ratio=None  # Don't undersample validation set
-)
-
-# Log dataset distribution
-if "user_languages" in train_stats:
-    lang_data = [[lang, count] for lang, count in train_stats["user_languages"].items()]
-
-train_dataset = Dataset.from_list(train_data)
-val_dataset = Dataset.from_list(val_data)
-
-print("\nTokenizing with assistant-only masking...")
-sys.stdout.flush()
-train_tokenized = train_dataset.map(
-    lambda x: tokenize_with_assistant_masking(x, tokenizer),
-    batched=True,
-    remove_columns=train_dataset.column_names,
-    desc="Tokenizing train"
-)
-
-val_tokenized = val_dataset.map(
-    lambda x: tokenize_with_assistant_masking(x, tokenizer),
-    batched=True,
-    remove_columns=val_dataset.column_names,
-    desc="Tokenizing val"
-)
-
-print("\nLoading OpenHermes model with 4-bit quantization (P100 optimized)...")
-sys.stdout.flush()
-
-# P100 doesn't support bfloat16, use float16 instead
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_use_double_quant=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.float16  # Changed from bfloat16 to float16 for P100
-)
-
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME,
-    quantization_config=bnb_config,
-    device_map="auto",
-    trust_remote_code=True,
-    dtype=torch.float16,  # Changed from bfloat16 to float16 for P100
-)
-
-model = prepare_model_for_kbit_training(model)
-model.config.use_cache = False
-if hasattr(model.config, "pretraining_tp"):
-    model.config.pretraining_tp = 1
-
-print("\nConfiguring LoRA...")
-sys.stdout.flush()
-target_modules = get_lora_target_modules(LORA_MODE)
-
-effective_lora_r = min(LORA_R, 8)
-effective_lora_alpha = min(LORA_ALPHA, 16)
-
-peft_config = LoraConfig(
-    r=effective_lora_r,
-    lora_alpha=effective_lora_alpha,
-    target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],  # Attention only
-    lora_dropout=0.15,
-    bias="none",
-    task_type="CAUSAL_LM",
-)
-
-model = get_peft_model(model, peft_config)
-model.print_trainable_parameters()
-
-# Get token IDs for focal loss with verification
-yes_tokens = tokenizer.encode("Yes", add_special_tokens=False)
-no_tokens = tokenizer.encode("No", add_special_tokens=False)
-
-# Use the first token, with fallback to tokens with leading space
-yes_token_id = yes_tokens[0] if yes_tokens else tokenizer.encode(" Yes", add_special_tokens=False)[0]
-no_token_id = no_tokens[0] if no_tokens else tokenizer.encode(" No", add_special_tokens=False)[0]
-
-# Verify tokens decode correctly
-yes_decoded = tokenizer.decode([yes_token_id])
-no_decoded = tokenizer.decode([no_token_id])
-print(f"\nToken IDs - Yes: {yes_token_id} (decodes to: '{yes_decoded}')")
-print(f"Token IDs - No: {no_token_id} (decodes to: '{no_decoded}')")
-
-# Sanity check
-if 'yes' not in yes_decoded.lower() or 'no' not in no_decoded.lower():
-    print("WARNING: Token IDs may not correctly represent Yes/No. Check tokenizer behavior.")
-
-# Training args WITHOUT early_stopping_patience
-
-"""## 13. Execute Training"""
-
-training_args = TrainingArguments(
-    output_dir="/kaggle/working/openhermes-finetuned",
-    run_name="openhermes-hrv-finetuning",
-    num_train_epochs=4,  # Increased from 2 for better convergence
-    per_device_train_batch_size=2,
-    per_device_eval_batch_size=2,
-    gradient_accumulation_steps=8,
-    gradient_checkpointing=True,
-    optim="paged_adamw_8bit",
-    learning_rate=5e-6,
-    weight_decay=0.05,
-    max_grad_norm=0.3,
-    warmup_ratio=0.06,
-    lr_scheduler_type="cosine",
-    fp16=True,
-    tf32=False,
-    logging_steps=5,
-    logging_first_step=True,
-    eval_strategy="steps",
-    eval_steps=30,
-    save_strategy="steps",
-    save_steps=30,
-    save_total_limit=6,
-    load_best_model_at_end=True,
-    metric_for_best_model="eval_loss",
-    greater_is_better=False,
-    dataloader_num_workers=2,
-    dataloader_pin_memory=True,
-    group_by_length=True,
-    disable_tqdm=False,
-    log_level="info",
-)
-
-data_collator = DataCollatorForCompletionOnly(tokenizer)
-
-print("\nInitializing Trainer with enhanced callbacks...")
-sys.stdout.flush()
-
-enhanced_callback = EnhancedWandbCallback()
-
-trainer = FocalLossCausalLMTrainer(
-    model=model,
-    args=training_args,
-    tokenizer=tokenizer,
-    train_dataset=train_tokenized,
-    eval_dataset=val_tokenized,
-    data_collator=data_collator,
-    callbacks=[enhanced_callback],
-    focal_gamma=2.0,  # Reduced from 2.5 for less conservative predictions
-    yes_token_id=yes_token_id,
-    no_token_id=no_token_id,
-)
-
-# Checkpoint detection
-checkpoint_dir = "/kaggle/working/openhermes-finetuned"
-last_checkpoint = None
-
-if os.path.exists(checkpoint_dir):
-    checkpoints = [
-        os.path.join(checkpoint_dir, d)
-        for d in os.listdir(checkpoint_dir)
-        if d.startswith("checkpoint-") and os.path.isdir(os.path.join(checkpoint_dir, d))
-    ]
-    if checkpoints:
-        checkpoints.sort(key=lambda x: int(x.split("-")[-1]))
-        last_checkpoint = checkpoints[-1]
-        checkpoint_step = last_checkpoint.split("-")[-1]
-        print(f"\nFound checkpoint at step {checkpoint_step}")
-        print(f"Resuming from: {last_checkpoint}")
-
-if last_checkpoint is None:
-    print("\nStarting training from scratch...")
-else:
-    print(f"\nResuming training from checkpoint...")
-
-print("=" * 60)
-sys.stdout.flush()
-torch.cuda.empty_cache()
-
-# Start training
-trainer.train(resume_from_checkpoint=last_checkpoint)
-
-print("\n" + "=" * 60)
-print("Saving final model...")
-sys.stdout.flush()
-final_dir = "/kaggle/working/openhermes-finetuned-final"
-trainer.save_model(final_dir)
-tokenizer.save_pretrained(final_dir)
+def main():
 
 
-print("\nTraining completed successfully!")
-sys.stdout.flush()
+    print("Loading tokenizer...")
+    sys.stdout.flush()
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
 
-print("\n" + "="*60)
-print("Running comprehensive evaluation on validation set...")
-print("="*60)
+    # Set padding token
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "right"
 
-# Evaluate
-best_model_path = trainer.state.best_model_checkpoint
-if best_model_path:
-    print(f"Loading best model from: {best_model_path}")
-
-try:
-    eval_results = evaluate_hrv_classification(
-        model=trainer.model,
-        tokenizer=tokenizer,
-        eval_dataset=val_data[:100],
-        device='cuda' if torch.cuda.is_available() else 'cpu'
+    print("\nLoading datasets...")
+    sys.stdout.flush()
+    train_data, train_stats = load_jsonl_data(
+        DATA_PATH,
+        tokenizer,
+        undersample_ratio=1.5  # Target 1.5:1 ratio for better recall on violations
     )
-except Exception as e:
-    print(f"Warning: Comprehensive evaluation failed: {e}")
-    print("Continuing with standard metrics only.")
+    val_data, val_stats = load_jsonl_data(
+        VAL_DATA_PATH,
+        tokenizer,
+        max_samples=500,
+        undersample_ratio=None  # Don't undersample validation set
+    )
 
-# Print training summary (removed return statement as it's not inside a function)
-training_summary = {
-    "final_train_loss": enhanced_callback.train_losses[-1] if enhanced_callback.train_losses else None,
-    "final_eval_loss": enhanced_callback.eval_losses[-1] if enhanced_callback.eval_losses else None,
-    "best_eval_loss": enhanced_callback.best_eval_loss,
-    "train_samples": train_stats["total"],
-    "val_samples": val_stats["total"],
-    "train_languages": dict(train_stats["user_languages"]),
-    "resumed_from_checkpoint": last_checkpoint is not None,
-    "checkpoint_path": last_checkpoint if last_checkpoint else "none",
-    "config": {
-        "model": MODEL_NAME,
-        "lora_mode": LORA_MODE,
-        "learning_rate": LEARNING_RATE,
-        "lora_r": LORA_R,
-        "max_seq_length": MAX_SEQ_LENGTH,
-        "precision": "fp16",
-        "gpu": "P100"
+    # Log dataset distribution
+    if "user_languages" in train_stats:
+        lang_data = [[lang, count] for lang, count in train_stats["user_languages"].items()]
+
+    train_dataset = Dataset.from_list(train_data)
+    val_dataset = Dataset.from_list(val_data)
+
+    print("\nTokenizing with assistant-only masking...")
+    sys.stdout.flush()
+    train_tokenized = train_dataset.map(
+        lambda x: tokenize_with_assistant_masking(x, tokenizer),
+        batched=True,
+        remove_columns=train_dataset.column_names,
+        desc="Tokenizing train"
+    )
+
+    val_tokenized = val_dataset.map(
+        lambda x: tokenize_with_assistant_masking(x, tokenizer),
+        batched=True,
+        remove_columns=val_dataset.column_names,
+        desc="Tokenizing val"
+    )
+
+    print("\nLoading OpenHermes model with 4-bit quantization (P100 optimized)...")
+    sys.stdout.flush()
+
+    # P100 doesn't support bfloat16, use float16 instead
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.float16  # Changed from bfloat16 to float16 for P100
+    )
+
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_NAME,
+        quantization_config=bnb_config,
+        device_map="auto",
+        trust_remote_code=True,
+        dtype=torch.float16,  # Changed from bfloat16 to float16 for P100
+    )
+
+    model = prepare_model_for_kbit_training(model)
+    model.config.use_cache = False
+    if hasattr(model.config, "pretraining_tp"):
+        model.config.pretraining_tp = 1
+
+    print("\nConfiguring LoRA...")
+    sys.stdout.flush()
+    target_modules = get_lora_target_modules(LORA_MODE)
+
+    effective_lora_r = min(LORA_R, 8)
+    effective_lora_alpha = min(LORA_ALPHA, 16)
+
+    peft_config = LoraConfig(
+        r=effective_lora_r,
+        lora_alpha=effective_lora_alpha,
+        target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],  # Attention only
+        lora_dropout=0.15,
+        bias="none",
+        task_type="CAUSAL_LM",
+    )
+
+    model = get_peft_model(model, peft_config)
+    model.print_trainable_parameters()
+
+    # Get token IDs for focal loss with verification
+    yes_tokens = tokenizer.encode("Yes", add_special_tokens=False)
+    no_tokens = tokenizer.encode("No", add_special_tokens=False)
+
+    # Use the first token, with fallback to tokens with leading space
+    yes_token_id = yes_tokens[0] if yes_tokens else tokenizer.encode(" Yes", add_special_tokens=False)[0]
+    no_token_id = no_tokens[0] if no_tokens else tokenizer.encode(" No", add_special_tokens=False)[0]
+
+    # Verify tokens decode correctly
+    yes_decoded = tokenizer.decode([yes_token_id])
+    no_decoded = tokenizer.decode([no_token_id])
+    print(f"\nToken IDs - Yes: {yes_token_id} (decodes to: '{yes_decoded}')")
+    print(f"Token IDs - No: {no_token_id} (decodes to: '{no_decoded}')")
+
+    # Sanity check
+    if 'yes' not in yes_decoded.lower() or 'no' not in no_decoded.lower():
+        print("WARNING: Token IDs may not correctly represent Yes/No. Check tokenizer behavior.")
+
+    # Training args WITHOUT early_stopping_patience
+
+    """## 13. Execute Training"""
+
+    training_args = TrainingArguments(
+        output_dir="/kaggle/working/openhermes-finetuned",
+        run_name="openhermes-hrv-finetuning",
+        num_train_epochs=4,  # Increased from 2 for better convergence
+        per_device_train_batch_size=2,
+        per_device_eval_batch_size=2,
+        gradient_accumulation_steps=8,
+        gradient_checkpointing=True,
+        optim="paged_adamw_8bit",
+        learning_rate=5e-6,
+        weight_decay=0.05,
+        max_grad_norm=0.3,
+        warmup_ratio=0.06,
+        lr_scheduler_type="cosine",
+        fp16=True,
+        tf32=False,
+        logging_steps=5,
+        logging_first_step=True,
+        eval_strategy="steps",
+        eval_steps=30,
+        save_strategy="steps",
+        save_steps=30,
+        save_total_limit=6,
+        load_best_model_at_end=True,
+        metric_for_best_model="eval_loss",
+        greater_is_better=False,
+        dataloader_num_workers=2,
+        dataloader_pin_memory=True,
+        group_by_length=True,
+        disable_tqdm=False,
+        log_level="info",
+    )
+
+    data_collator = DataCollatorForCompletionOnly(tokenizer)
+
+    print("\nInitializing Trainer with enhanced callbacks...")
+    sys.stdout.flush()
+
+    enhanced_callback = EnhancedWandbCallback()
+
+    trainer = FocalLossCausalLMTrainer(
+        model=model,
+        args=training_args,
+        tokenizer=tokenizer,
+        train_dataset=train_tokenized,
+        eval_dataset=val_tokenized,
+        data_collator=data_collator,
+        callbacks=[enhanced_callback],
+        focal_gamma=2.0,  # Reduced from 2.5 for less conservative predictions
+        yes_token_id=yes_token_id,
+        no_token_id=no_token_id,
+    )
+
+    # Checkpoint detection
+    checkpoint_dir = "/kaggle/working/openhermes-finetuned"
+    last_checkpoint = None
+
+    if os.path.exists(checkpoint_dir):
+        checkpoints = [
+            os.path.join(checkpoint_dir, d)
+            for d in os.listdir(checkpoint_dir)
+            if d.startswith("checkpoint-") and os.path.isdir(os.path.join(checkpoint_dir, d))
+        ]
+        if checkpoints:
+            checkpoints.sort(key=lambda x: int(x.split("-")[-1]))
+            last_checkpoint = checkpoints[-1]
+            checkpoint_step = last_checkpoint.split("-")[-1]
+            print(f"\nFound checkpoint at step {checkpoint_step}")
+            print(f"Resuming from: {last_checkpoint}")
+
+    if last_checkpoint is None:
+        print("\nStarting training from scratch...")
+    else:
+        print(f"\nResuming training from checkpoint...")
+
+    print("=" * 60)
+    sys.stdout.flush()
+    torch.cuda.empty_cache()
+
+    # Start training
+    trainer.train(resume_from_checkpoint=last_checkpoint)
+
+    print("\n" + "=" * 60)
+    print("Saving final model...")
+    sys.stdout.flush()
+    final_dir = "/kaggle/working/openhermes-finetuned-final"
+    trainer.save_model(final_dir)
+    tokenizer.save_pretrained(final_dir)
+
+
+    print("\nTraining completed successfully!")
+    sys.stdout.flush()
+
+    print("\n" + "="*60)
+    print("Running comprehensive evaluation on validation set...")
+    print("="*60)
+
+    # Evaluate
+    best_model_path = trainer.state.best_model_checkpoint
+    if best_model_path:
+        print(f"Loading best model from: {best_model_path}")
+
+    try:
+        eval_results = evaluate_hrv_classification(
+            model=trainer.model,
+            tokenizer=tokenizer,
+            eval_dataset=val_data[:100],
+            device='cuda' if torch.cuda.is_available() else 'cpu'
+        )
+    except Exception as e:
+        print(f"Warning: Comprehensive evaluation failed: {e}")
+        print("Continuing with standard metrics only.")
+
+    # Print training summary (removed return statement as it's not inside a function)
+    training_summary = {
+        "final_train_loss": enhanced_callback.train_losses[-1] if enhanced_callback.train_losses else None,
+        "final_eval_loss": enhanced_callback.eval_losses[-1] if enhanced_callback.eval_losses else None,
+        "best_eval_loss": enhanced_callback.best_eval_loss,
+        "train_samples": train_stats["total"],
+        "val_samples": val_stats["total"],
+        "train_languages": dict(train_stats["user_languages"]),
+        "resumed_from_checkpoint": last_checkpoint is not None,
+        "checkpoint_path": last_checkpoint if last_checkpoint else "none",
+        "config": {
+            "model": MODEL_NAME,
+            "lora_mode": LORA_MODE,
+            "learning_rate": LEARNING_RATE,
+            "lora_r": LORA_R,
+            "max_seq_length": MAX_SEQ_LENGTH,
+            "precision": "fp16",
+            "gpu": "P100"
+        }
     }
-}
 
-print("\n" + "="*60)
-print("TRAINING SUMMARY")
-print("="*60)
-for key, value in training_summary.items():
-    print(f"{key}: {value}")
-print("="*60)
+    print("\n" + "="*60)
+    print("TRAINING SUMMARY")
+    print("="*60)
+    for key, value in training_summary.items():
+        print(f"{key}: {value}")
+    print("="*60)
 
-!zip -r hermes_final.zip /kaggle/working/openhermes-finetuned-final
+    # To package result: zip -r hermes_final.zip /kaggle/working/openhermes-finetuned-final
+    print("Done. To package: zip -r hermes_final.zip /kaggle/working/openhermes-finetuned-final")
+
+
+if __name__ == "__main__":
+    main()
