@@ -1,8 +1,7 @@
 [project]
 name = "major-grp51"
-version = "0.1.0"
-description = ""
-requires-python = ">=3.11,<3.12"
+version = "2.1.4"
+description = "Fine-Tuning LLMs for Detecting HRVs"
 
 authors = [
     { name = "Shreya Srivastava" },
@@ -10,26 +9,20 @@ authors = [
     { name = "Dinesh Dhiman" },
     { name = "Arshit Dogra" }
 ]
-
-readme = "README.md"
 license = { file = "LICENSE" }
-
 urls = { "Homepage" = "https://github.com/Fairtexas5/Major_Grp51" }
 
+readme = "README.md"
+requires-python = ">=3.11"
 dependencies = [
-  "poetry",
-  "tensorflow==2.19.0",
-  "requests>=2.32.5",
-  "matplotlib>=3.10.6",
-  "torch>=2.8.0",
-  "pandas>=2.3.2",
-  "ipython-autotime>=0.3.2",
-  "transformers>=4.56.2",
-  "scikit-learn>=1.7.2",
-  "seaborn>=0.13.2",
-  "ipykernel",
-  "python-dotenv (>=1.2.1,<2.0.0)",
-  "tqdm (>=4.67.1,<5.0.0)",
-  "gradio (>=5.49.1,<6.0.0)",
-  "openpyxl (>=3.1.5,<4.0.0)"
+    "argostranslate>=1.11.0",
+    "gradio>=6.14.0",
+    "ipykernel>=7.2.0",
+    "matplotlib>=3.10.9",
+    "pandas>=3.0.2",
+    "plotly>=6.7.0",
+    "python-dotenv>=1.2.2",
+    "requests>=2.33.1",
+    "scikit-learn>=1.8.0",
+    "tqdm>=4.67.3",
 ]
