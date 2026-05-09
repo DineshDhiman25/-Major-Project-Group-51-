@@ -1,0 +1,869 @@
+Detecting Human Rights Violations on Social Media Using Machine Learning
+Poli Apollinaire Nemkova,1 Suleyman O. Polat,1 Solomon Ubani,2
+Nayeon Kim,1 Rodney D. Nielsen1
+1College of Computer Science and Engineering, University of North Texas, USA
+2Intuit, USA
+poli.nemkova@unt.edu, suleymanolcaypolat@my.unt.edu, solomon ubani@intuit.com,
+nayeonkim3@my.unt.edu, rodney.nielsen@unt.edu
+Abstract
+The present-day Russia-Ukraine military conflict has exposed
+the pivotal role of social media in enabling the transparent
+and unbridled sharing of information directly from the front-
+lines. In conflict zones where freedom of expression is con-
+strained and information warfare is pervasive, social media
+has emerged as an indispensable lifeline. Anonymous social
+media platforms, as publicly available sources for disseminat-
+ing war-related information, have the potential to serve as ef-
+fective instruments for monitoring and documenting Human
+Rights Violations (HRV). Our research focuses on the anal-
+ysis of data from Telegram 1, the leading social media plat-
+form for reading independent news in post-Soviet regions. 2
+We gathered a dataset of posts sampled from 95 public Tele-
+gram channels that cover politics and war news, which we
+have utilized to identify potential occurrences of HRV . Em-
+ploying a mBERT-based text classifier, we have conducted
+an analysis to detect any mentions of HRV in the Telegram
+data. Our final approach yielded anF2 score of 0.71 for HRV
+detection, representing an improvement of 0.38 over the mul-
+tilingual BERT base model. We release two datasets that con-
+tain Telegram posts: (1) large corpus with over 1.6 millions
+posts and (2) annotated at the sentence-level dataset to in-
+dicate HRVs. The Telegram posts are in the context of the
+Russia-Ukraine war. We posit that our findings hold signif-
+icant implications for NGOs, governments, and researchers
+by providing a means to detect and document possible human
+rights violations.
+Introduction
+The Russia-Ukraine war has raised significant concerns
+about Human Rights Violations (HRVs), with reports of
+atrocities against civilians and soldiers. Early in the conflict,
+the Office of the United Nations High Commissioner for
+Human Rights (OHCHR) documented thousands of civilian
+casualties, emphasizing the urgent need to respect interna-
+tional human rights laws (Bachelet 2022; OHCHR 2022).
+Human rights are foundational to global and national
+governance, ensuring dignity and equality. However, re-
+cent trends, such as the World Justice Project’s Rule of
+Copyright © 2025, Association for the Advancement of Artificial
+Intelligence (www.aaai.org). All rights reserved.
+1https://telegram.org/
+2https://www.wsj.com/articles/telegram-thrives-amid-russias-
+media-crackdown-11647595800
+Law Index, show a troubling global decline in these pro-
+tections, driven by authoritarianism and weakened account-
+ability (World Justice Project 2022). In response, technol-
+ogy plays an increasingly important role in documenting
+and preventing HRVs, including tools for online reporting
+and social media content as evidence (Dawes 2022; Bachelet
+2022).
+This research focuses on detecting HRV mentions in
+Russian-language social media data using Natural Lan-
+guage Processing (NLP). Telegram, a platform central to
+war-related discourse, is chosen for its popularity and se-
+cure communication features, especially among Russian-
+speaking users. With Telegram’s rapid growth and role in
+disseminating politically sensitive information, it offers a
+critical dataset for this study.
+We introduce two datasets:
+1. Corpus: 1.6 million Telegram posts in Russian and
+Ukrainian.
+2. Annotated Subset: 3,076 posts (15,693 sentences), la-
+beled at the sentence level for binary HRV detection.
+Key Contributions:
+• The first ML research detecting HRVs in the Russian lan-
+guage.
+• A publicly released corpus of 1.6 million Russian and
+Ukrainian Telegram posts.
+• A labeled dataset identifying HRV mentions in Russian
+and Ukrainian.
+This work lays the groundwork for tools that support hu-
+man rights monitoring and contribute to UN Sustainable De-
+velopment Goals by promoting peaceful and just societies.
+Literature Review
+Human Rights Violations and Machine Learning
+With the widespread use of social media, researchers
+have explored its potential for detecting human rights vi-
+olations (HRVs). Previous studies have applied computa-
+tional methods to identify HRVs, including image process-
+ing approaches (Kalliatakis et al. 2017) and text analysis us-
+ing social media data. For example, Chen et al. (Chen and
+Neill 2015) used social media graphs to cluster HRV-related
+tweets, while Alhelbawy et al. (Alhelbawy et al. 2020) ap-
+plied deep neural networks to classify Arabic tweets as hu-
+man rights abuse (HRA) or non-HRA, achieving a precision
+of 85% and an F1-score of 75%. Despite these advances,
+our work differs by leveraging modern transformer models
+and focusing on random data sampling rather than keyword-
+based extraction.
+Related Tasks
+Since HRV detection using NLP is a nascent area, we
+draw inspiration from related fields like hate speech detec-
+tion. Studies such as Gitari et al. (2015) used sentiment anal-
+ysis for hate speech classification, while Schmidt and Wie-
+gand (2017) reviewed NLP techniques for hate speech, iden-
+tifying features like bag-of-words, sentiment analysis, and
+multimodal inputs. These methodologies provide valuable
+insights for HRV detection.
+Telegram Data in Research
+Telegram, a widely used platform in the post-Soviet re-
+gions, serves as a cornerstone of this research. Existing stud-
+ies have primarily analyzed Telegram data for extremist net-
+works (Urman and Katz 2022; Rogers 2020) or its role
+in resistance movements (Akbari and Gabdulhakov 2019).
+However, none have focused on Russian-language Telegram
+posts or HRV detection, highlighting the novelty of our ap-
+proach.
+Russia-Ukraine Conflict and NLP
+Efforts to analyze the Russia-Ukraine conflict have
+largely used English Twitter data, focusing on hate speech,
+sentiment analysis, or public opinion (Thapa et al. 2022;
+Mir 2023). To our knowledge, this study is the first to uti-
+lize Telegram data in Russian to detect HRVs related to the
+Russia-Ukraine war, offering a unique contribution to assist
+NGOs and governments in tracking HRVs and potential war
+crimes.
+Data
+For the present study, we aimed to identify instances of hu-
+man rights violations (HRVs) in textual data from public
+Telegram channels covering the Russia-Ukraine war and po-
+litical news. To achieve this goal, we first identified a total
+of 95 public channels covering the aforementioned topics.
+These channels encompassed a wide range of pro-Russian
+and pro-Ukrainian affiliations, ensuring a diverse range of
+perspectives.
+When considering the identification of affiliation in vari-
+ous channels, it is pertinent to observe that a significant num-
+ber of these channels overtly express their support through
+the language employed. Notably, certain symbols or charac-
+ters are utilized to indicate allegiance, such as the prevalent
+use of ’Z’ as a pro-Russian emblem or the inclusion of a
+Ukrainian flag emoji as an indication of pro-Ukrainian sen-
+timent. These affiliations are frequently evident in the chan-
+nels’ titles or descriptions, enabling prompt determination of
+the ideological inclination embraced by the channel. Exam-
+ples of Telegram posts with their English translations can be
+found in Table 2.
+We collected all posts from each channel starting from the
+beginning of the war on February 23rd, 2022 until January
+29th, 2024. This yielded a large corpus consisting of posts
+written in both Russian and Ukrainian languages. We pro-
+vide descriptive data for the corpus in Table 1. We openly
+Total Number of Channels 95
+Channels Leaning to Russia 28
+Channels Leaning to Ukraine 26
+Channels with Unclear Affiliation 41
+Average Number of Posts
+per Channel 24,300
+Table 1: Corpus Description
+release this unique corpus for scientific community use.3
+Annotated Data
+To obtain a representative sample of posts related to the
+Russia-Ukraine conflict, we randomly extracted 30 posts
+from each of the 95 public channels identified on Telegram.
+This approach was chosen to ensure the sample’s represen-
+tativeness.
+We split the posts into sentences for our task utilizing
+NLTK’s PunktSentenceTokenizer library for Russian.4 The
+decision to partition the posts into sentences was made with
+the intention of conducting a more nuanced analysis. Addi-
+tionally, since certain posts may contain numerous HRVs,
+our aim was to effectively capture each instance. The av-
+erage length of a sentence in our annotated dataset was 13
+words, with a mode of 7 words.
+For the labeling task we employed the services of four
+annotators who were native Russian speakers and possessed
+diverse political affiliations. The annotators were provided
+with instructions in the Russian language.
+Each post in our dataset was associated with the following
+information: date and timestamp, post ID, channel ID, and
+message. Human annotators labeled the dataset using Label
+Studio5 software and Google spreadsheets.
+The human annotators tasked with labeling the data were
+instructed to identify sentences that potentially mention one
+or more human rights violations (HRVs). Specifically, we re-
+stricted this project to the following types of HRVs: killing
+civilians, destruction of civil objects, rape, torture, execu-
+tion, or mistreatment of prisoners. Out of The Universal
+Declaration of Human Rights, 6 we narrowed down the list
+of HRV to just six in order to make the task more specific
+for the annotators. We chose these particular six as the most
+relevant to the war and, hence, more likely appearing in our
+dataset. (We grouped ‘rape, torture, execution’ as one label,
+and hence have four types of HRVs in total). The final labels
+were binary in nature: 1 indicates the presence of a possible
+HRV , while 0 indicates the absence of HRVs. The annotators
+were presented with the full posts, but labeled the data on
+a sentence level, thereby facilitating more detailed and nu-
+anced future analysis. We provide the annotator guidelines
+(in Russian) in our Github repository.7
+3https://github.com/PoliNemkova/HRV detection on social media
+4https://github.com/Mottl/ru punkt
+5https://labelstud.io/
+6https://www.ohchr.org/en/what-are-human-
+rights/international-bill-human-rights
+7The detailed annotation guidelines are available at
+Positive examples Translation
+По предварительным
+данным, жертвами
+обстрела стали 9
+мирных жителей (8
+погибли и 1 ранен)»,
+— сообщает СЦКК
+ЛНР
+According to preliminary
+data, 9 civilians became
+victims of the shelling
+(8 were killed and 1
+wounded),” the LPR
+JCCC reports.
+По его словам, в ре-
+зультате ночного ра-
+кетного удара по За-
+порожью пострадали
+многоквартирные до-
+ма и улицы частного
+сектора города.
+According to him, as a
+result of the night missile
+attack on Zaporozhye,
+apartment buildings and
+streets of the private sec-
+tor of the city were dam-
+aged.
+Negative examples Translation
+ВСУ официально за-
+явили об уничтоже-
+нии 44 из 50 запущен-
+ных по Украине ра-
+кет.
+The Armed Forces of
+Ukraine officially an-
+nounced the destruction
+of 44 out of 50 missiles
+launched in Ukraine.
+О какой побе-
+де...Неужели укра-
+инцы не понимают,
+что их используют и
+всем наплевать на их
+жизни?
+About what a victory ...
+Do the Ukrainians really
+not understand that they
+are being used and that
+no one cares about their
+lives?
+Table 2: Examples of Labeled Sentences: (HRV or ‘1’ and
+non-HRV or ‘0’
+Most of the core annotations were performed by two an-
+notators and adjudicated by a third. Specifically, a first an-
+notator pre-labeled all 15,693 sentences (3076 posts); 228
+sentences were labeled as HRV (positive class) and 15,465
+as non-HRV (negative class). Then three subsets of posts
+were extracted: (1) those containing at least one sentence
+pre-labeled as positive, (2) an equal-sized random sample of
+posts where all of the sentences had been pre-labeled nega-
+tive, and (3) all additional posts containing at least one sen-
+tence labeled positive by a preliminary version of our clas-
+sifier (details of our model are covered in SectionMethods).
+These posts were presented to the two annotators in a ran-
+dom order and double annotated. All disagreements were
+adjudicated by a different analyst who is a Russian speak-
+ing political expert. All the other pre-labeled posts were left
+in the dataset with their negative (non-HRV) sentence la-
+bels. After adjudication, the number of positive examples
+changed to 273, and negatives to 15,410.
+The Cohen’s Kappa score (Cohen 1968), which is com-
+monly used to evaluate annotator agreement, was computed
+to assess the level of agreement between the two indepen-
+dent annotators (before adjudication). The obtained Cohen’s
+Kappa score is 0.44 and indicates moderate agreement ac-
+cording to Landis and Koch [1977]. This score suggests that
+the task of identifying instances of human rights violations
+https://github.com/PoliNemkova/HRV detection on social media.
+Iteration Language Chain
+1 Russian-Arabic-Japanese-Russian
+2 Russian-Turkish-Farsi-Russian
+3 Russian-Chinese-Polish-Russian
+4 Russian-Hebrew-German-Russian
+5 Russian-Thai-Greek-Russian
+Table 3: Back Translation Language Chains
+in social media posts is challenging, and different annota-
+tors may have varying perceptions regarding what consti-
+tutes such violations. We provide positive and negative la-
+beled examples in Table 2.
+The final size of this annotated dataset is 15,693 labeled
+sentences: 273 examples of HRV class and 15,420 of non-
+HRV labeled examples.
+Data Partitioning
+From the annotated dataset previously described we ran-
+domly partitioned 80% of the posts for use as a training set,
+while reserving 20% for a held-out test set. Descriptions of
+our annotated training and test datasets are provided in Table
+4.
+Training Data
+As described earlier and illustrated in Figure 4, our train-
+ing data is highly imbalanced with just around 2% of sen-
+tences being labeled as HRV . We attempted to mitigate this
+class imbalance by utilizing the following data augmentation
+techniques: Back Translation and ChatGPT Data generation.
+Back Translation. We applied paraphrasing of the pos-
+itive examples using translation chains such as Russian-
+Arabic-Japanese-Russian (Beddiar, Jahan, and Oussalah
+2021). This approach yielded another 228 HRV training ex-
+amples per chain. In total, we utilized 5 different translation
+chains, each involving two languages in addition to the Rus-
+sian source language (see Table 3). This resulted in a total of
+1,140 additional positive examples to augment the training
+dataset, bringing number of positive examples to be close to
+10% of the training data.
+Chat GPT Data Generation . Furthermore, in order to
+enhance the training dataset, we implemented a method of
+generating synthetic data through the utilization of Chat-
+GPT,8 which is a sizeable language model capable of
+generating language autonomously. Our approach entailed
+prompting ChatGPT to generate sentences in the Russian
+language that depict violations of human rights. Through a
+process of prompt engineering, we selected two prompts that
+yielded the most appropriate data for our purposes.
+The first prompt instructed ChatGPT to produce sentences
+in the Russian language that exemplify instances of human
+rights violations during the Russia-Ukraine conflict. It is
+noteworthy that the initial output generated by ChatGPT ex-
+hibited a bias towards violations committed exclusively by
+the Russian side. This bias was subsequently addressed by
+8https://openai.com/blog/chatgpt
+Parameter Train Test
+Total Number of Posts 2,466 610
+Total Number of Sentences 12,554 3,139
+Number of HRV Sentences 228 45
+Number of non-HRV Sentences 12,326 3,094
+Number of HRV Posts 90 25
+Number of non-HRV Posts 2,376 585
+Table 4: The Base Dataset Description
+posing the question to Chat GPT, ”Why are all the violations
+presented as being committed by Russia only?” This led to
+a more balanced output of data.
+Prompt 2 instructed ChatGPT to act as a Telegram chan-
+nel and generate posts, each comprising a single sentence,
+that describe anecdotes of human rights violations in the
+context of the Russia-Ukraine war in 2022. This scenario-
+based prompt produced examples that were more aligned
+with the intended objective. However, during the data re-
+trieval phase utilizing ChatGPT, we observed the model’s
+instability, whereby the same prompt could elicit either a re-
+fusal to respond due to ethical considerations or a range of
+responses with varying styles.
+After we reviewed the examples, five of them was re-
+moved as being irrelevant. We generated a total of 510 posi-
+tive examples with this approach and included them as a part
+of our training data.
+Sets of Training Data. We ran our models on the follow-
+ing sets of training data:
+• The Base Training Dataset (D1): 80% of the annotated
+data (2,466 posts, 12,554 sentences).
+• Augmented Training Dataset (D2): The Base Train-
+ing Dataset + Augmented Data using Back Translation
+(3,606 posts, 13,694 sentences).
+• Dataset 3 (D3): The Base Training Dataset + ChatGPT
+data (13,064 sentences).
+• Dataset 4 (D4): Augmented Training Dataset + ChatGPT
+data (14,429 sentences).
+Testing Data
+The testing dataset consisted of the remaining 20% of the
+annotated posts, resulting in a size of 610 posts or 3,139
+sentences.
+Methods
+The aim of our study is to detect textual mentions of human
+rights violations (HRV) in Telegram posts. In an applica-
+tion, these full posts would be forwarded, with the detected
+mentions highlighted, to an analyst for review, archival and
+action. Therefore, our data is labeled at the sentence level,
+rather than post level, to allow the sentence-level mentions
+to be emphasized. Hence, the methods here focus on per-
+forming classification at the sentence level.9
+9Similar F1 scores were seen when either classifying at the post
+level or rolling the sentence-level classifications up to evaluate at
+Keyword Translation Keyword Translation
+‘результате’‘resulted’ ‘людей’ ‘people’
+‘граждан’ ‘civilians’ ‘Буча’ ‘Bucha’
+‘пытки’ ‘tortures’ ‘мирного’ ‘peaceful’
+‘города’ ‘city’ ‘погиб’ ‘died’
+‘дома’ ‘houses’ ‘жителей’ ‘inhabitants’
+‘мирных’ ‘of peaceful’ ‘разрушен’ ‘destroyed’
+‘российские’‘Russian’ ‘обстрела’ ‘shelling’
+‘ВСУ’ ‘AFU’11 ‘Информации’‘Information’
+‘Окупанти’ ‘Invaders’ ‘получили’ ‘received’
+‘ранения’ ‘injuries’ ‘детей’ ‘children’
+‘пострадали’‘injured’ ‘Мариуполя’ ‘Mariupol’
+‘Милостив’ ‘Milostiv’ ‘СА У’ ‘SAU’
+‘удар’ ‘strike’ ‘сообщает’ ‘informs’
+‘дiтей’ ‘children’ ‘словам’ ‘words’
+‘видео’ ‘video’ ‘человека’ ‘person’
+Table 5: Keywords
+In addition, our emphasis is on identifying most potential
+references to HRV , at the cost of a higher false positive rate.
+Therefore, we prioritize evaluating our system’s recall over
+precision. Accordingly, we have opted to employ the F beta
+score, where beta is set to 2 (F2), as our primary evaluation
+metric (Rijsbergen 1979). This measure enables us to place
+greater emphasis on recall than precision in our evaluation.
+We also report F1 scores.
+Baseline
+In order to evaluate how well this task can be performed
+using a straight forward method, we evaluated a keyword
+baseline approach.
+We utilized the yake library10 to extract 30 keywords and
+presented both the keywords themselves and their corre-
+sponding English translations in a Table 5.
+It is worth noting that we also considered the suitability
+of the nltk 12 and spaCy13 Python libraries for the purposes
+of automated keyword extraction. However, based on our
+experimentation with a Russian dataset, we observed that
+the yake library produced a more pertinent set of keywords.
+Consequently, we adopted the yake library as our chosen
+method for keyword extraction.
+Subsequently, we designated all sentences that contained
+at least one of the keywords extracted from the list as repre-
+senting human rights violation (HRV), whereas those lack-
+ing any such keywords were categorized as non-HRV .
+Models
+For our tasks, we chose to test transformers as they are
+the state-of-the-art models for textual data. 14 First, we em-
+ployed a base multilingual BERT model ( mBERT) which
+is a pre-trained deep learning language model with 12 lay-
+ers (Tranformer blocks), a word embedding (hidden) size
+the post level. However, post-level classification results have higher
+variance, since the number of positive test examples is roughly cut
+in half.
+10https://pypi.org/project/yake/
+12https://www.nltk.org/
+13https://spacy.io/
+14https://gluebenchmark.com/leaderboard
+Approach and Training Data P R F 1 F2
+D1: Base Training Dataset
+Keywords Based (baseline) 0.12 0.65 0.19 0.35
+mBERT base 0.42 0.31 0.36 0.33
+RuBERT 0.46 0.36 0.40 0.38
+XLM-RoBERTa 0.38 0.33 0.36 0.34
+D2: Augmented Dataset
+(base + backtranslated)
+mBERT base 0.47 0.82 0.60 0.71
+RuBERT 0.45 0.80 0.58 0.69
+XLM-RoBERTa 0.41 0.80 0.54 0.67
+D3: Base Training Dataset
++ ChatGPT data
+mBERT base 0.45 0.40 0.42 0.41
+RuBERT 0.54 0.31 0.39 0.34
+XLM-RoBERTa 0.39 0.53 0.45 0.49
+D4: Base Training Dataset
++ ChatGPT data
++ Augmented Data
+mBERT base 0.39 0.82 0.53 0.67
+RuBERT 0.43 0.69 0.53 0.62
+XLM-RoBERTa 0.35 0.87 0.50 0.67
+Table 6: Test Set Performance: Breakdown per model and
+training dataset.
+of 768, and 12 self-attention heads (110M total parameters)
+(Devlin et al. 2018). Specifically, we used the Huggingface
+bert-base-multilingual-uncased model.15
+We also evaluated XLM-RoBERTa,16 a transformer
+model pre-trained on a large corpus in a self-supervised
+fashion on 2.5TB of filtered CommonCrawl data spanning
+100 languages (Conneau et al. 2019).
+Finally, we also tried RuBERT, a BERT-based model
+specifically trained on the Russian language. 17 RuBERT is
+a monolingual transformer-based language model that was
+trained from multilingual BERT with the addition of extra
+Russian vocabulary tokens (Kuratov and Arkhipov 2019).
+We conducted k-fold cross-validation (Kohavi 1995) with
+k set to 5 for hyper-parameter tuning and model validation.
+During the tuning phase, we selected the training dataset,
+model, number of training epochs, and the block fine-tuning
+strategy that exhibited the optimal performance. Following
+cross-validation on the training dataset, we have determined
+that a total of 5 epochs is optimal. Additionally, we elected
+to freeze the first six model blocks and fine-tune only the
+15https://huggingface.co/bert-base-multilingual-uncased
+16https://huggingface.co/xlm-roberta-base
+17https://huggingface.co/DeepPavlov/rubert-base-cased
+final six blocks as a means of mitigating overfitting and en-
+hancing model generalization.
+Several parameters were not tuned in the experiment.
+Specifically, all models were trained utilizing a categor-
+ical cross-entropy loss function, the AdamW optimizer
+(Loshchilov and Hutter 2017) and a learning rate of 5e-
+5. In light of the class imbalance observed in the dataset,
+the weights in the loss function were modified to 0.17 for
+the non-HRV class and 0.83 for the HRV class. Alternative
+weight configurations of [0.5, 0.5] and [0.2, 0.8] were ex-
+plored. The most optimal results for the experiment were
+determined empirically to be associated with the reported
+combined weight configuration.
+Results
+As previously stated, our emphasis lies on recall, therefore,
+we have adopted the utilization of F2 as a principal evalua-
+tion metric. The most proficient model in our study, namely
+mBERT trained on the Augmented Dataset, obtained an F2
+score of 0.71, with precision and recall rates of 0.47 and
+0.82, respectively. We observed that the incorporation of
+back translation data resulted in an enhancement of 0.38
+points in the performance of mBERT relative to training
+only on the Base Training Dataset. All the performance
+scores are provided in Table 6.
+Discussion
+Model Performance. All of the models we tried performed
+best with the Augmented Dataset (D2). We attribute that to
+the fact that there is a substantial class imbalance in the
+Base Training Dataset. The top performing model is mul-
+tilingual BERT, while RuBERT consistently performed just
+slightly worse (dropping 0.02 to 0.07 in the F2 score) with
+the exception of training on D1 where RuBERT scored 0.05
+points higher. This is counter-intuitive because both mod-
+els have the same BERT base architecture and RuBERT was
+specifically trained for Russian. The difference appears to
+be in the training data. One possible explanation is that,
+as a result of the multi-language translation chain incor-
+porating languages from divergent groups, the final back-
+translated “Russian” language resembles these intermedi-
+ary languages. This could result in a lower performance for
+the Russian-specific LM, RuBERT, while mBERT could be
+robust to this grammatical and stylistic variation given its
+multi-lingual pre-training corpus.
+XLM-RoBERTa achieved the highest F2 score when
+trained on the augmented dataset (D2) and (D4). Notably,
+compared to other models, XLM-RoBERTa demonstrated
+the most significant improvement in performance when
+trained on the D3 dataset. This observation implies that the
+inclusion of ChatGPT had the greatest impact on this partic-
+ular model, resulting in a 15% increase in F2 score.
+F2 score for all models evaluated. Notably, incorporating
+ChatGPT data resulted in an 8% increase in mBERT and
+a 15% increase in XLM-RoBERTa, compared to training
+solely on the Annotated Dataset. However, for RuBERT, the
+addition of ChatGPT resulted in a 4% decrease in perfor-
+mance.
+The study found that combining all training datasets (D4)
+did not result in any performance improvement for the mod-
+els evaluated, compared to the results achieved with D2
+alone. Furthermore, the precision of the models was signifi-
+cantly compromised.
+Class Imbalance. It is important to acknowledge the
+challenge that arises from the imbalance in the training data
+set, which includes only a scant number of instances of
+HRV compared to the considerable number of non-HRV
+sentences. Despite this discrepancy, our model was able to
+attain an F2 score of 0.71. Nonetheless, the recall value of
+0.84 and the precision of 0.45 suggest that the model is rel-
+atively well able to identify relevant items whenever they
+are present. Nevertheless, only 45% of the extracted items
+are deemed relevant. We will address the trade-off between
+precision and recall in our study in subsequent paragraphs.
+Our attempts to tackle this challenge through data aug-
+mentation and assigning specific weights in the loss function
+have led to marginal improvements. Hence, the class imbal-
+ance remains a persistent obstacle in our data. Also, we rec-
+ognize that the biggest issue to tackle now is an sub-optimal
+precision.
+Impact of Data Augmentation. The issue of class im-
+balances was partially mitigated by the acquisition of ad-
+ditional positive examples through back translation. As
+demonstrated in Table 6, performance of all the models was
+observed to improve upon the inclusion of augmented back
+translation data. Specifically, the mBERT trained solely on
+the Base Training Dataset yielded anF2 score of 0.33, while
+augmenting the training data resulted in an increase in the
+F2 score to 0.71. It is noteworthy that the use of the Aug-
+mented Dataset for training resulted in a recall improvement
+of more than twofold across all models.
+The utilization of a ChatGPT approach for augmenting
+the training data yielded enhanced performance compared
+to training solely on the Base Training Dataset (D1). XLM-
+RoBERTa exhibited the most substantial improvement with
+a 15% increase in the F2 metric, alongside a marginal en-
+hancement in precision by 1%, and a considerable improve-
+ment in recall by 20%.
+Despite the fact that in our study, back translation brought
+the primary benefit, we note that data augmentation via
+ChatGPT also improved the performance. Our study focused
+predominantly on the Russian language, which is a high-
+resource language that can be translated accurately and with
+ease. Nonetheless, for other languages that do not possess
+such resources, data augmentation via ChatGPT represents
+a viable alternative for improving results.
+Recall vs. Precision. Our system’s primary objective is
+to identify the maximum number of instances of HRV , even
+at the expense of erroneously classifying some non-HRV
+items. As such, our focus is on maximizing recall, rather
+than precision. (With that understanding, we utilize the F2
+metric as our principal evaluation criterion to evaluate our
+system’s performance.)
+Our analysis of the various combinations of models and
+training data has revealed notable performance disparities
+between the most effective options, such as mBERT and Ru-
+BERT on both the Augmented Training Dataset and the Base
+Training Dataset. Specifically, we observed that the most ef-
+fective model was mBERT trained on the Augmented Train-
+ing Dataset, which yielded a high recall rate of 0.82, albeit
+at the cost of a lower precision of 0.47 (and an F2 score of
+0.71). In contrast, RuBERT trained on the Augmented Train-
+ing Dataset exhibited slightly inferior performance, with an
+F2 score of 0.69, despite an identical recall rate of 0.80, but
+with a lower precision of 0.45.
+Remarkably, we observed the highest recall rate of 0.87
+when training XLM-RoBERTa on the combined dataset
+(D4), while simultaneously maintaining an F2 score of 0.67.
+The Cohen’s Kappa score. Despite the moderate value
+of the Cohen’s Kappa score, it is crucial to underscore the
+significance and complexity of our undertaking. We remain
+optimistic that our datasets and preliminary systems will
+provide valuable groundwork for further research by other
+scholars.
+Error Analysis. It appears that the easiest type of HRV
+for the system to detect is ‘killing of civilians’, as seen in
+the following example, ‘Вчера вечером вблизи своего
+дома в Северодонецке из-за вражеских обстрелов по-
+гиблимужчинаиженщина,ещедвеженщиныубиты
+российскими обстрелами в Лисичанске и Привилле.’
+(‘Last night, a man and a woman were killed near their home
+in Severodonetsk due to enemy shelling, two more women
+were killed by Russian shelling in Lisichansk and Priville’).
+The most common false negative error is associated
+with ‘Civil Objects Destruction’. Examples of this error
+are ‘Загарбники здiйснили масований обстрiл мiста
+Слов’янськ Донецької областi — у зону обстрiлу по-
+трапив мiсцевий ринок.’(‘The invaders launched a mas-
+sive shelling of the city of Slovyansk, Donetsk region — a
+local market fell into the shelling zone.’) and ‘Когда уви-
+дел своими глазами, ужаснулся: два десятка домов в
+хлам’(‘When I saw with my own eyes, I was horrified: two
+dozen houses got destroyed to the trash’). This errors sug-
+gest that adding context into the model may help the model
+to learn better and avoid similar errors.
+The prevalent false positive examples are related to death
+or other violence but not in a context of HRV . For example:
+‘Тут можно найти и конституционную реформу 2020
+года, и проблемы с независимостью судов, и наруше-
+ния права на жизнь в ходе вооруженных конфлик-
+тов, и пытки, и домашнее насилие’(‘Here you can find
+the constitutional reform of 2020, and problems with the in-
+dependence of the judiciary, and violations of the right to life
+during armed conflicts, and torture, and domestic violence’).
+This suggests that we need to provide more negative exam-
+ples that include references to death yet are not considered
+as an HRV .
+Possible Improvements. A potential avenue for future
+improvement could involve integrating contextual informa-
+tion from posts into the classifier. We posit that such an ap-
+proach has the potential to enhance the performance of the
+classifier.
+Future Work.With our encouraging results, we are eager
+to explore further improvements in our system. Our research
+findings offer the possibility of extending this project by de-
+veloping a multiclass classifier capable of detecting specific
+types of HRV . We are particularly interested in the four types
+of HRV mentioned in the annotation description, namely, (1)
+killing civilians, (2) destruction of civil objects, (3) rape, tor-
+ture, and execution, and (4) mistreatment of prisoners.
+We also explore applications of generative models, such
+as GPT, in the project and future publications.
+We see our work as a first step in a project to build a
+more general social media based tool for documenting hu-
+man rights violations during wars. Specifically, future work
+includes extrapolating this model to other languages and ge-
+ographic locations.
+Conclusion
+Detecting and documenting human rights violations (HRVs)
+is crucial yet resource-intensive. Our study addresses this
+challenge by leveraging machine learning and natural lan-
+guage processing to develop cost-effective methods for HRV
+detection, focusing on data from the Russia-Ukraine con-
+flict.
+Social media platforms, particularly Telegram, are valu-
+able sources of information but pose challenges due to high
+data volume, misinformation, and propaganda. To address
+this, we collected and annotated data from 95 public Tele-
+gram channels covering war-related news, applying data
+augmentation and transformer-based classification. Our best
+model, fine-tuned mBERT, achieved anF2 score of 0.71.
+This study is the first to use Russian-language data for
+HRV detection, contributing two publicly available datasets:
+(1) a large corpus of 1.6 million Telegram posts and (2) an
+annotated dataset labeled for HRVs. These resources aim to
+support further research on HRV detection in Eastern Eu-
+rope.
+We believe this work provides a foundation for NGOs,
+governments, and researchers to identify and document
+HRVs more effectively, promoting accountability and hu-
+man rights protection.
+Ethical Statement
+Data Collection
+The data collection process relied on the Telegram API. 18
+Joining (or subscribing) the public channels was not neces-
+sary in order to collect the data, though a publicly available
+invite link and a Telegram account was required in order to
+access the channel. (We provide channels links in the re-
+leased dataset).
+Initially, we conducted manual searches and utilized online
+resources to identify pertinent channels. Subsequently, the
+channel IDs were employed to extract the posts via the API,
+covering the time span from February 23, 2022, to January
+29, 2024. We have included comprehensive instructions and
+a pre-configured code to facilitate data extraction through
+our prescribed method.19. Users do need to apply for a per-
+sonal Telegram API key, which is free.
+18https://core.telegram.org/
+19https://github.com/PoliNemkova/HRV detection on social media
+Each post is characterized by distinct identifiers, includ-
+ing the channel ID, post ID, date (comprising day, month,
+year, and time), and the textual content of the post.
+Dataset Release Safety
+We believe that the Telegram dataset holds significant value
+for the research community, particularly in the context of
+applying natural language processing (NLP) techniques to
+analyze the Russia-Ukraine conflict. This is evident from the
+growing interest of researchers worldwide, as reflected in the
+numerous scholarly papers that have utilized Twitter data
+as a primary source (such as Garcia and Cunanan-Yabut;
+Polyzos; Vahdat-Nejad et al.; Shlkamy, Mahar, and Sedky;
+Caprolu, Sadighian, and Di Pietro). However, it is impor-
+tant to note that Twitter has been predominantly utilized for
+gathering NLP datasets for social media analysis, while the
+relevance of Telegram, especially in Russian-speaking coun-
+tries, has been comparatively understudied. As previously
+noted, Telegram exhibits a notably higher prevalence within
+the Russian-speaking region compared to Twitter. Conse-
+quently, we encourage researchers to expand their analyses
+to include Telegram, as this may yield more insightful and
+contextually relevant results.
+Nevertheless, it is essential to acknowledge the potential
+risks associated with the usage of Telegram data, particu-
+larly in Russia, where individuals can face arrest for cer-
+tain posts on the platform. 20 Additionally, there is a possi-
+bility that channels and posts may be sporadically deleted.
+To mitigate against our dataset inadvertently causing harm,
+we have adopted a cautious approach by only releasing the
+channel and post IDs, along with instructions for extracting
+them. By adopting this strategy, the dataset comprises solely
+publicly available channels and posts as of the date of the
+API call.
+Although, to our best knowledge, there is currently no ex-
+plicit policy from Telegram regarding the use of public data,
+we have followed a similar approach to Twitter’s policy. We
+provide a dataset that includes channel IDs and post IDs,
+which are sufficient for retrieving a post. Consequently, if a
+channel or post is subsequently deleted from the platform,
+we do not retain any information associated with it.
+Additionally, it is worth noting that Telegram channels
+identified within the dataset do not allow user participa-
+tion in the main channel, with the occasional exception of
+comments and emoji reactions, mitigating risk of individual
+identification on a member level.
+Scientific Neutrality Statement
+We emphasize that irrespective of the author’s personal per-
+spectives, our objective is to construct an impartial system
+capable of capturing instances of human rights violations,
+regardless of the responsible parties involved.
+Acknowledgements
+We appreciate the annotators who volunteered to annotate
+the data for this project.
+20https://www.washingtonpost.com/opinions/
+interactive/2023/political-protest-new-generation-faces/
+We are also thankful to the United Nations Human Rights
+Monitoring Mission in Ukraine for endorsing our project.
+References
+Akbari, A.; and Gabdulhakov, R. 2019. Platform surveil-
+lance and resistance in Iran and Russia: The case of Tele-
+gram. Surveillance & Society, 17(1/2): 223–231.
+Alhelbawy, A.; Lattimer, M.; Kruschwitz, U.; Fox, C.; and
+Poesio, M. 2020. An nlp-powered human rights monitoring
+platform. Expert Systems with Applications, 153: 113365.
+Bachelet, M. 2022. Ensuring accountability for atrocities
+committed in Ukraine. Last accessed 24 February 2023.
+Beddiar, D. R.; Jahan, M. S.; and Oussalah, M. 2021. Data
+expansion using back translation and paraphrasing for hate
+speech detection. Online Social Networks and Media , 24:
+100153.
+Caprolu, M.; Sadighian, A.; and Di Pietro, R. 2022.
+Characterizing the 2022 Russo-Ukrainian Conflict Through
+the Lenses of Aspect-Based Sentiment Analysis: Dataset,
+Methodology, and Preliminary Findings. arXiv preprint
+arXiv:2208.04903.
+Chen, F.; and Neill, D. B. 2015. Human rights event de-
+tection from heterogeneous social media graphs. Big Data,
+3(1): 34–40.
+Cohen, J. 1968. Weighted kappa: nominal scale agreement
+provision for scaled disagreement or partial credit. Psycho-
+logical bulletin, 70(4): 213.
+Conneau, A.; Khandelwal, K.; Goyal, N.; Chaudhary, V .;
+Wenzek, G.; Guzm ´an, F.; Grave, E.; Ott, M.; Zettle-
+moyer, L.; and Stoyanov, V . 2019. Unsupervised cross-
+lingual representation learning at scale. arXiv preprint
+arXiv:1911.02116.
+Dawes, J. 2022. Autonomous weapons as a solution to war
+crimes? Last accessed 24 February 2023.
+Devlin, J.; Chang, M.-W.; Lee, K.; and Toutanova, K. 2018.
+Bert: Pre-training of deep bidirectional transformers for lan-
+guage understanding. arXiv preprint arXiv:1810.04805.
+Garcia, M. B.; and Cunanan-Yabut, A. 2022. Public Sen-
+timent and Emotion Analyses of Twitter Data on the 2022
+Russian Invasion of Ukraine. In2022 9th International Con-
+ference on Information Technology, Computer, and Electri-
+cal Engineering (ICITACEE), 242–247. IEEE.
+Gitari, N. D.; Zuping, Z.; Damien, H.; and Long, J. 2015. A
+lexicon-based approach for hate speech detection. Interna-
+tional Journal of Multimedia and Ubiquitous Engineering ,
+10(4): 215–230.
+Kalliatakis, G.; Ehsan, S.; Fasli, M.; Leonardis, A.; Gall,
+J.; and McDonald-Maier, K. D. 2017. Detection of human
+rights violations in images: Can convolutional neural net-
+works help? arXiv preprint arXiv:1703.04103.
+Kohavi, R. 1995. A study of cross-validation and bootstrap
+for accuracy estimation and model selection. In Ijcai, vol-
+ume 14, 1137–1145. Montreal, Canada.
+Kuratov, Y .; and Arkhipov, M. 2019. Adaptation of deep
+bidirectional multilingual transformers for russian language.
+arXiv preprint arXiv:1905.07213.
+Landis, J. R.; and Koch, G. G. 1977. The measurement of
+observer agreement for categorical data. biometrics, 159–
+174.
+Loshchilov, I.; and Hutter, F. 2017. Decoupled weight decay
+regularization. arXiv preprint arXiv:1711.05101.
+Mir, A. A. 2023. Exploring the perceived opinion of social
+media users about the Ukraine–Russia conflict through the
+naturalistic observation of tweets. Social Network Analysis
+and Mining, 13(1): 44.
+OHCHR. 2022. SITUATION OF HUMAN RIGHTS IN
+UKRAINE IN THE CONTEXT OF THE ARMED AT-
+TACK BY THE RUSSIAN FEDERATION. Last accessed
+24 February 2023.
+Polyzos, E. 2022. Escalating tension and the war in Ukraine:
+Evidence using impulse response functions on economic in-
+dicators and twitter sentiment. Available at SSRN 4058364.
+Rijsbergen, C. 1979. Information retrieval 2nd ed Butter-
+sworth. London [Google Scholar], 115.
+Rogers, R. 2020. Deplatforming: Following extreme Inter-
+net celebrities to Telegram and alternative social media.Eu-
+ropean Journal of Communication, 35(3): 213–229.
+Schmidt, A.; and Wiegand, M. 2017. A survey on hate
+speech detection using natural language processing. In Pro-
+ceedings of the fifth international workshop on natural lan-
+guage processing for social media, 1–10.
+Shlkamy, E. S. I.; Mahar, K. M.; and Sedky, A. A. H. 2023.
+A Russia-Ukraine Conflict Tweets Sentiment Analysis Us-
+ing Bidirectional LSTM Network.
+Thapa, S.; Shah, A.; Jafri, F.; Naseem, U.; and Razzak, I.
+2022. A multi-modal dataset for hate speech detection on
+social media: Case-study of russia-ukraine conflict. In Pro-
+ceedings of the 5th Workshop on Challenges and Applica-
+tions of Automated Extraction of Socio-political Events from
+Text (CASE), 1–6.
+Urman, A.; and Katz, S. 2022. What they do in the shadows:
+examining the far-right networks on Telegram. Information,
+communication & society, 25(7): 904–923.
+Vahdat-Nejad, H.; Akbari, M. G.; Salmani, F.; Azizi, F.;
+and Nili-Sani, H.-R. 2023. Russia-Ukraine war: Modeling
+and Clustering the Sentiments Trends of Various Countries.
+arXiv preprint arXiv:2301.00604.
+World Justice Project. 2022. World Justice Project Rule of
+Law Index® 2022 Insights. Last accessed 24 February 2023.
