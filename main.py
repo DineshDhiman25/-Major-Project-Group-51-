@@ -31,7 +31,7 @@ DATASETS = {
     },
     "3": {
         "key": "russia",
-        "label": "Russia    (data/jsonl/hrv_rus_train.jsonl  + hrv_rus_test.jsonl)",
+        "label": "Russia    (data/jsonl/hrv_rus_train.jsonl + hrv_rus_test.jsonl)",
     },
     "4": {
         "key": "venezuela",

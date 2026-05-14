@@ -65,7 +65,7 @@ def fetch_telegram_posts(
 
     out_df = pd.DataFrame(results)
     out_df.to_csv(output_csv, index=False)
-    print(f"✅ Saved {len(out_df)} rows to: {output_csv}")
+    print(f"Saved {len(out_df)} rows to: {output_csv}")
     return out_df
 
 

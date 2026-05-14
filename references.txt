@@ -1,0 +1,27 @@
+References
+[1]	J. Wei et al., �Finetuned Language Models Are Zero-Shot Learners,� Feb. 2022, [Online]. Available: http://arxiv.org/abs/2109.01652
+[2]	M. W. M. Botes, �Brain Computer Interfaces and Human Rights: Brave new rights for a brave new world,� in 2022 ACM Conference on Fairness Accountability and Transparency, New York, NY, USA: ACM, Jun. 2022, pp. 1154�1161. doi: 10.1145/3531146.3533176.
+[3]	A. H. Ali, I. D. Abdullah, A. R. Aswad, M. M. Abdeldayem, and S. H. Aldulaimi, �Human Rights and Artificial Intelligence: Evaluation of Legal Challenges and Potential Risk,� in 2022 ASU International Conference in Emerging Technologies for Sustainability and Intelligent Systems (ICETSIS), IEEE, Jun. 2022, pp. 361�367. doi: 10.1109/ICETSIS55481.2022.9888888.
+[4]	L. O. Gostin et al., �Human rights and the COVID-19 pandemic: a retrospective and prospective analysis,� The Lancet, vol. 401, no. 10371, pp. 154�168, Jan. 2023, doi: 10.1016/S0140-6736(22)01278-8.
+[5]	J. Hancock, S. Mahesh, J. Cobbe, J. Singh, and A. Mazumder, �The tensions of data sharing for human rights: A modern slavery case study,� in The 2024 ACM Conference on Fairness, Accountability, and Transparency, New York, NY, USA: ACM, Jun. 2024, pp. 974�987. doi: 10.1145/3630106.3658949.
+[6]	Bijo p. abraham, Compendium on Human RigHts Violations in digital space, 2nd ed., vol. 1. 2024.
+[7]	Michelle Burgis Kasthala, �Frontiers of gender equality: transnational legal perspectives,� Human Rights Law , vol. 25, no. 3, 2025.
+[8]	C. Bunch, �Women�s Rights as Human Rights: Toward a Re-Vision of Human Rights,� Hum. Rights Q., vol. 12, no. 4, p. 486, Nov. 1990, doi: 10.2307/762496.
+[9]	Sylvia A. Law and Patricia Hennessey, �Is the Law Male: The Case of Family Law,� Chicago Kent Law Review, vol. 69, no. 2, 1193.
+[10]	R. Khosla et al., ��Righting the wrongs�: addressing human rights and gender equality through research since Cairo,� Sex. Reprod. Health Matters, vol. 27, no. 1, pp. 329�332, Jan. 2019, doi: 10.1080/26410397.2019.1676529.
+[11]	Ira Chadha-Sridhar and Aratrika Choudhuri, �OF MEN�S RIGHTS, MOTHERHOOD AND MINORS: CRITICAL FEMINIST REFLECTIONS ON SHARED PARENTING LAWS IN INDIA,� NUJS Law Review , 2016.
+[12]	P. A. Nemkova, S. Ubani, and M. V. Albert, �Comparing LLM Text Annotation Skills: A Study on Human Rights Violations in Social Media Data,� AAAI, May 2025.
+[13]	Poli Apollinaire Nemkova, Suleyman O. Polat, Solomon Ubani, Nayeon Kim, and Rodney D. Nielsen, �Detecting Human Rights Violations on Social Media Using Machine Learning,� in AAAI, AAAI, 2025.
+[14]	Y. Mejova, A. Capozzi, C. Monti, and G. De Francisci Morales, �Narratives of War: Ukrainian Memetic Warfare on Twitter,� Proc. ACM Hum. Comput. Interact., vol. 9, no. 2, pp. 1�28, May 2025, doi: 10.1145/3711037.
+[15]	X. Zhao, J. Greenberg, Y. An, and X. T. Hu, �Fine-Tuning BERT Model for Materials Named Entity Recognition,� in 2021 IEEE International Conference on Big Data (Big Data), IEEE, Dec. 2021, pp. 3717�3720. doi: 10.1109/BigData52589.2021.9671697.
+[16]	K. Huang et al., �An Empirical Study on Fine-Tuning Large Language Models of Code for Automated Program Repair,� in 2023 38th IEEE/ACM International Conference on Automated Software Engineering (ASE), IEEE, Sep. 2023, pp. 1162�1174. doi: 10.1109/ASE56229.2023.00181.
+[17]	U. Iqbal, T. Kohno, and F. Roesner, �LLM Platform Security: Applying a Systematic Evaluation Framework to OpenAI�s ChatGPT Plugins,� Jul. 2024.
+[18]	W. Cheng, K. Sun, X. Zhang, and W. Wang, �Security Attacks on LLM-based Code Completion Tools,� Proceedings of the AAAI Conference on Artificial Intelligence, vol. 39, no. 22, pp. 23669�23677, Apr. 2025, doi: 10.1609/aaai.v39i22.34537.
+[19]	Q. Wang et al., �Anatomizing Deep Learning Inference in Web Browsers,� ACM Transactions on Software Engineering and Methodology, vol. 34, no. 2, pp. 1�43, Feb. 2025, doi: 10.1145/3688843.
+[20]	S. Almohaimeed, S. Almohaimeed, and L. B�l�ni, �Transfer Learning and Lexicon-Based Approaches for Implicit Hate Speech Detection: A Comparative Study of Human and GPT-4 Annotation,� in 2024 IEEE 18th International Conference on Semantic Computing (ICSC), IEEE, Feb. 2024, pp. 142�147. doi: 10.1109/ICSC59802.2024.00028.
+[21]	J. J. Garc�a Mesa, �Scalable Patent Analysis Using Function Calling with Local Large Language Models,� in Practice and Experience in Advanced Research Computing 2025: The Power of Collaboration, New York, NY, USA: ACM, Jul. 2025, pp. 1�4. doi: 10.1145/3708035.3736071.
+[22]	R. Ramesh, A. T. R. M, H. V. Reddy, and S. V. N, �Fine-Tuning Large Language Models for Task Specific Data,� in 2024 2nd International Conference on Networking, Embedded and Wireless Systems (ICNEWS), IEEE, Aug. 2024, pp. 1�6. doi: 10.1109/ICNEWS60873.2024.10730913.
+[23]	A. Vaswani et al., �Attention Is All You Need,� 2023.
+[24]	H. Touvron et al., �LLaMA: Open and Efficient Foundation Language Models,� Feb. 2023, [Online]. Available: http://arxiv.org/abs/2302.13971
+[25]	A. Q. Jiang et al., �Mistral 7B,� Oct. 2023, [Online]. Available: http://arxiv.org/abs/2310.06825
+[26]	K. Huang et al., �An Empirical Study on Fine-Tuning Large Language Models of Code for Automated Program Repair,� in 2023 38th IEEE/ACM International Conference on Automated Software Engineering (ASE), IEEE, Sep. 2023, pp. 1162�1174. doi: 10.1109/ASE56229.2023.00181.

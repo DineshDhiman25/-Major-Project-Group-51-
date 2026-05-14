@@ -1,0 +1,782 @@
+Chapter 1: Introduction
+1.1. Introduction
+In recent years, social media has become an inseparable part of people's lives because of its abundance of up-to-date and relevant information. For example, regarding the Russian invasion of Ukraine, people can find a lot of posts about what is going on there. Journalistic articles offer verified information in an organized manner, whereas civilians and participants provide real-time updates in their personal posts. Social media is one of the most used ways to keep updated about the latest happenings today.
+At the same time, the incessant stream of data brings with it a number of challenges. On the one hand, there is too much information to analyze. Hundreds of thousands of social media posts appear daily, and manual reviewing of all this data takes lots of money and resources. In addition, these texts include information in different languages, some slang expressions, and context-dependent phrases which are hard to understand without additional explanation.
+Nowadays, advanced technological solutions like multilingual transformer models and LLMs help detect HRVs based on big volumes of social media data automatically. However, these technologies require training data reflecting the complexity of the online community, including sarcastic and offensive language. Therefore, it is crucial to create a dataset that meets these requirements and allows training these systems efficiently.
+This project addresses the problem described above and suggests developing a framework that will solve this issue. Data annotation included in this project was reviewed by domain experts in order to achieve high quality and avoid ethical mistakes. On a technical side, the framework uses pretrained multilingual transformer models fine-tuned using social media datasets. In order to increase the reliability of our solution, the model includes protection from adversarial inputs.
+From the ethical point of view, the anonymity of people whose data was used should be preserved. If there is not enough labeled data, we use augmentations like translation to increase the quality of the model.
+1.2. Problem Statement
+Firstly, social media is a powerful source that documents human rights violations in relation to natural disaster events and wars. Social media users freely share information, which can help trace the incidents and ensure they are true facts. However, with the overwhelming number of posts in multiple languages and dialects, the task of finding and labeling the information becomes exceedingly complex for human workers or machine learning algorithms.
+From the perspective of technology development, the task itself poses several difficulties. Posts containing any kind of HRVs account for only an infinitesimal share in terms of quantity. Additionally, the multi-lingualism in the dataset (predominantly Russian/Ukrainian language), the non-formal and sometimes coded language and the lack of context negatively impact the performance of models despite fine-tuning. Moreover, most LLMs [1] suffer from being overwhelmingly English-based, which further complicates the task of training and deploying a model.
+With the above considerations in mind, this paper proposes an automated framework for detecting posts related to human rights violations based on machine learning. This tool can allow human rights protection organizations and NGO's as well as governments and international institutions to detect HRVs faster.
+1.3. Objectives
+* Objective 1 ? Developing a Multilingual Dataset to Identify Human Rights Violation: Developing a Multilingual Dataset to Identify Human Rights Violations: Our main objective is to develop a comprehensive multilingual dataset of tweets that would encompass various kinds of human rights issues. We gathered random samples, broke them down into sentences, handled sensitive data appropriately, and finally released the resulting data publicly, so that other researchers could also use the data in developing automated tools for monitoring human rights abuse. We believe that this will decrease costs for other researchers and help advance the field of natural language processing as well.
+* Objective 2 ? Utilize many Open Source LLM Models: As a further step, we are trying to evaluate how much success we would have if we trained multilingual transformers, specifically, open-source LLMs [2], to identify the posts that may suggest human rights violation. To overcome the problem of class imbalance, we are trying to employ data augmentation methods such as back-translation and synthetic data creation.
+* Objective 3 ? Evaluate Large Language Models and Experts for Annotation Process: Finally, we also decided to test some of the commercially and publicly available LLMs for their ability to annotate social media data with human rights indicators with minimum supervision and measure their performance in terms of precision and recall per language.
+* Objective 4 ? Enhance capability and reasoning of LLMs: Enhance capability and reasoning of LLMs: Our next objective is to ensure that the models used for human rights monitoring are capable of processing more complicated inputs, including ambiguous expressions, coded speech, and biased narratives. The emphasis here will be made on building fair and unbiased detection tools, rather than on those that may harm specific communities. We carefully analyzed the potential risks, came up with guidelines and criteria for annotation and assessment, and did our best to make sure that no one gets put in harm's way.[1]
+* Objective 5 ? Promotion and Publishing of weights for practical cases: In addition to training large language models, we will create practical detection tools and datasets that could be useful for NGO's, government agencies, and other institutions interested in monitoring online discussion on human rights violations and promoting knowledge-sharing. We employed exclusively low-cost open-source methods, which is especially useful for the institutions that have limited resources. Ultimately, our project aims to contribute to the achievement of UN Sustainable Development Goals, namely, promotion of peace and justice.
+1.4. Significance and Motivation of the Project Report
+Firstly, it is essential to point out that human rights are important because they are intended to protect every individual's well-being and preserve their dignity. However, whenever the violation of such rights takes place, there may appear a range of negative outcomes associated with it, including social chaos, violent acts, and even the loss of lives. Hence, it becomes evident that there is a need for creating mechanisms to regulate and control potentially harmful content. Nevertheless, considering that tens of millions of posts and comments get published every single day, it becomes apparent that only AI-based approaches can be used to deal with such issues. Therefore, the creation of a system capable of identifying HRVs can help minimize any adverse consequences.
+Especially during military confrontations, social networks become the main platforms for recording human rights violations; hence, the enormous amount of unverified information gets produced. It would take too much time to review each post or picture manually and identify those that require further examination, and such a strategy might lead to the failure of stopping the spread of potentially harmful content. Thus, fine-tuning LLMs on conflict-related information allows obtaining efficient means for filtering and classifying the content for detecting HRVs. [1][4]
+The results of our assessment of different language model architectures' ability to complete annotation tasks show that these algorithms have the potential to make the work significantly less costly than having humans do it, especially when applied alongside proper prompting techniques and linguistics.
+Such discoveries are highly valuable since they are relevant to some high-impact projects. In this regard, this research provides stakeholders with tools for managing possible biases in the system, dealing with adversarial prompts, and using datasets responsibly.
+The main motivation behind this project was the lack of public text-based datasets intended for HRV detection. Currently, the majority of HRV-related datasets include only images and memes, and almost no text-based material is available. Given the tremendous amount of unstructured data related to various armed conflicts, this issue should be addressed urgently.
+1.5. Organization of Project Report
+It should be noted that according to the presented structure of the report, six chapters will be developed, which will describe various aspects related to the project implementation. Thus, through the introduction of information contained in each of the subsequent chapters, it will become possible to give an answer to the question why research was necessary, what the developed tool includes, how it was implemented, as well as how it worked..
+Chapter 1: Introduction
+This chapter introduces to the unfamiliarity of the project that proposes an approaching solution to one of the biggest problems in this world. It explains the problem being face, why no work is done on it, the significance and motivation behind it. This chapter also tells a little introduction to the remaining chapters in the project.
+Chapter 2: Literature Survey
+The literature survey presents an overview of the literature survey of existing literature regarding computational human rights monitoring, including conflict informatics, social media analysis, and several other areas of research. Past research has focused on documenting human rights abuses using traditional fact-finding approaches, and more recent projects that have included digital evidence as part of the process for documenting human rights violations. Other areas of research mentioned in the survey include the development of different classifications of human rights abuses and how they could be used for analytical purposes.
+Chapter 3: System Development
+This chapter focuses on the development of the systems to create the technical backbone of this report. The chapter will present the overall system design (architecture) in addition to showing/information flow (i.e., data source, to preprocessing components, to human rights violation classification model, to web-based interface/conversational Layer for interactive analysis) through all aspects of development of the system).
+Chapter 4: Testing
+As already mentioned, testing is required in order to check the operation of the software on all components of the system. Thus, we talk about the testing of such operations of the software as collecting information, processing it, translating, and classification. Unit testing will help determine whether or not the modules perform their functions properly when receiving controlled input � the testing of individual modules will cover the scripts for collecting data, preprocessing, translating and classifying data.
+Chapter 5: Results and Evaluation
+The fifth chapter will present the results obtained after testing the suggested framework and evaluation its performance in different scenarios. This involves analyzing such issues as working with files, processing structured information, and performing tasks within the framework of repositories. Attention will be paid to the most important performance indicators of the software, which include accuracy, speed and reliability. In cases where there is a need to compare it with other tools and methods, such actions will be performed. At the same time, we pay attention to the limitations revealed in the course of practical application.
+Chapter 6: Conclusions and Future Scope
+In the conclusions, the author will discuss the effectiveness of achieving the goals set at the very beginning of work. In particular, it will be discussed the impact of the study conducted on digital human rights monitoring in conflicts and crises. Also, the key achievements, including the creation of the multilingual, Telegram-compatible dataset based on the situation in Russia and Ukraine, will be noted. It will also provide some ideas for further research in the field of digital human rights analysis and monitoring.
+
+
+Chapter 02: Literature Survey
+There have been significant changes in the approaches to studying human rights over the past century. From the perspective of theoretical foundation and methodology, they have evolved from predominantly being grounded in legal philosophy, constitutional law, and political institution studies. In particular, their emphasis lies on defining the concept of rights, their enforcement, and the roles played by national and international authorities. While such works are valuable and have provided significant contributions to the field, they had one drawback in common, namely, their reliance on institutional data, records, and communication channels that inevitably slowed down research.
+Today, however, thanks to the development of digital communication, the paradigm has changed dramatically. During modern conflicts and crises, as well as times of political instability, people use Twitter, Facebook, Telegram, and other social media resources both to post evidence and develop a narrative around certain events. Although this trend provides an unprecedented level of accessibility to information and makes it easier to detect and report HRVs, it makes spreading misinformation and propaganda equally simple.
+As the nature of the problem changed dramatically, the methods employed in its research started to change too. More and more works today apply computational analysis techniques, including natural language processing (NLP) and machine learning algorithms. The emerging discipline is truly interdisciplinary and combines law, statistics, and artificial intelligence. As a consequence of that, computational systems, as any other scientific discoveries, impact the knowledge production process. Hence, questions related to interpretability, accuracy, bias, and accountability become crucial in research.
+This chapter provides a brief overview of literature dedicated to computational approaches to analyzing human rights violations. First, we consider NLP-based techniques used to detect them. Then, we discuss some potential challenges arising from the use of artificial intelligence. Finally, we provide an insight into the topic relevant to our project, namely, an annotation tool based on LLMs.
+2.1. Summary of Relevant Literature
+In the context of human rights monitoring, literature on computational techniques reveals a shift from normative and legal interpretations to data-driven approaches powered by AI. The earlier works in this field focused on legal aspects, institutional responsibility, and doctrinal developments while emphasizing such themes as equality, justice, and protecting vulnerable groups [11][13]. In the meantime, this topic has gradually evolved beyond classic human rights domains to incorporate new issues, such as digital rights [5]. Recent literature highlights the shortcomings of monitoring systems discovered under the circumstances of global pandemics and emergencies, thus requiring further developments in this sphere [7].
+The rise of social media has contributed to the emergence of a new tool for monitoring and analyzing human rights violations. For instance, Mejova et al. [17] found that during the Russin invasion of Ukrain, narratives spread rapidly, with memes being an effective form of propaganda actively shaping users' views. It becomes evident that social networks serve as a powerful tool for spreading information related to human rights issues. Moreover, a number of other studies analyzed public sentiments and trends in relation to conflicts using various methods of sentiment analysis and trend prediction [25][26]. However, many approaches still rely on keyword search and frequency analysis, which may limit their capacity to identify underlying contextual meaning.
+Thanks to natural language processing, the issue is now becoming easier to address. The development of the transformer architecture [2] and large language models [1], such as LLaMA, has made it possible to obtain significant improvements in named entity recognition and text classification [18]. Besides, such models facilitate transfer learning and allow fine-tuning to the needs of a particular area with a relatively small amount of annotated data [4][19]. At the same time, there are still numerous challenges in applying NLP techniques to human rights issues, including the lack of support for multilingual, informal language usage, and adversarial communication, which is typical of conflicts.
+In response to these problems, modern literature addresses the potential of large language models and advanced fine-tuning methods for NLP applications. For instance, Wei et al. [3] proved that large enough models are capable of generalizing to new tasks with only a little additional training, while other research examined various options for adapting models to certain tasks without starting the process from scratch. In the context of human rights, Nemkova et al. [15] tested the effectiveness of language models in annotating violent discourse and found that such systems were highly accurate with proper prompts used. Polat et al. [16] discovered that class imbalance could be mitigated by back translation and data augmentation. Similarly, comparative studies revealed that human-like annotations of hate speech in the context of human rights could be obtained with the help of LLM [23].
+On the other hand, numerous publications draw attention to the ethical, legal, and security issues associated with the use of NLP models. According to Ali et al. [6], biased training data might result in unfair discrimination in legal cases that involve human rights violations. In addition, Hancock et al. [8] highlighted the issue of sharing datasets in such cases, mentioning its conflicting aspects related to the necessity of preserving anonymity of victims and providing transparency at the same time. Moreover, the recent literature draws attention to the security threats related to the misuse of large language models in automated environments [20][21].
+Therefore, it is apparent that the modern research focuses increasingly on the use of automation tools to facilitate the identification of human rights violations with the help of machine learning and natural language processing techniques. Despite this, a number of problems still exist in this field. In particular, most existing approaches are designed for high-resource languages, are based on small datasets with labels, and lack transparent and open methodologies. Thus, addressing these issues would require more research and interdisciplinary cooperation.
+
+
+
+
+
+
+
+S. No.
+Paper Title [Cite]
+Journal/ Conference (Year)
+Tools/ Techniques/ Dataset
+Results
+Limitations
+1.
+Brain Computer Interfaces and Human Rights: Brave new rights for a brave new world; Marietjie Botes [2]
+ACM Conference on Fairness, Accountability, and Transparency 2022
+
+Discusses Brain-Computer Interfaces (BCIs) deep-learning algorithms, and fMRI 'brain decoding'.
+Introduces novel ethical, legal, social, and technical implications (ELSTI)
+
+Highlight fundamental rights aspects but does not pose effective answers to the complex issues discussed.
+
+2.
+Human Rights and Artificial Intelligence: Evaluation of Legal Challenges and Potential Risk; Alaa Hussein Ali, Ilham... [3]
+IEEE ASU International Conference 2022
+Uses literature review and historical analysis methodology.
+AI systems pose severe human rights risks due to their advanced self-capabilities and reliance on potentially biased data.
+Laws and regulations often struggle to keep pace with the rapid pattern of technological changes, creating critical policy gaps.
+3.
+Human rights and the COVID-19 pandemic: a retrospective and prospective analysis; Lawrence O Gostin... [4]
+The Lancet and NIH
+Involves a retrospective and prospective analysis of the pandemic response.
+The pandemic was characterized by the failure of many states to uphold human rights exposing national inequalities.
+The paper does not comprehensively document the full range of rights violations.
+4.
+The tensions of data sharing for human rights: A modern slavery case study; Jamie Hancock... [5]
+The 2024 ACM Conference on Fairness, Accountability, and Transparency
+Qualitative analysis methodology based on interviews, workshops, and ecosystem mapping.
+Well intentioned data sharing for human rights (MSHT) can produce 'ironic consequences' that enable harms against.
+The study did not engage directly with victims (people with lived experience of MSHT).
+5.
+Compendium on Human Rights Violations in Digital Space; Written and researched by Bijo P. Abraham[6]
+
+It is a product of the APC-IMPACT project funded by the European Union (EU)
+
+Methodology was qualitative content analysis based on secondary data and literature review on HR.
+
+Incidents of online rights violations were reported, primarily concerning Freedom of Expression (FoE), Freedom of Association and Assembly (FoAA), and Right to Privacy (RTP).
+The study relies only on secondary data from news reports.
+
+6.
+Frontiers of gender equality: transnational legal perspectives; Michelle BurgisKasthala.[7]
+Journal & year: Human Rights Law Review, 2025 (Vol. 25, Issue 3).
+Transactional and doctrinal legal analysis synthesizing formal vs. substantive equality debates
+Articulates how courts and legal systems should prioritize substantive equality
+Narrative legal synthesis with limited quantitative evaluation
+7.
+Women�s Rights as Human Rights: Toward a ReVision of Human Rights; Charlotte Bunch[8]
+Human Rights Quarterly, 1990
+feminist legal and policy analysis
+reframed women�s rights within the core of international human rights and proposed advocacy pathways
+conceptual essay without empirical datasets and pre1990s institutional reforms context.
+8.
+The Case of Family Law; Sylvia A. Law and Patricia Hennessey[9]
+ChicagoKent Law Review
+doctrinal and historical analysis of custody standards and case law
+argues �best interests� vagueness structurally advantages men and endorses primarycaretaker rules
+U.S. focus from the early 1990s with limited quantitative evaluation
+9.
+�Righting the wrongs�: addressing human rights and gender equality through research since Cairo Rajat Khosla et al.[10]
+Sexual and Reproductive Health Matters (2019)
+narrative review of WHO HRP programs and studies linking gender to SRH policy and guidance
+evidence informed WHO norms and national programming while identifying gaps.
+concentrated on HIV/maternal/VAW with short timeframes and limited geographic diversity.
+10.
+Of Men�s Rights, Motherhood and Minors: Critical Feminist Reflections on Shared Parenting Laws in India; Ira ChadhaSridhar and Aratrika Choudhuri [11]
+NUJS Law Review (2016)
+doctrinal critique of Law Commission Report 257 with feminist and masculinity theory
+rejects presumptive shared parenting, recommending mandatory child support and rebuttable presumption against joint custody in DV cases
+theoretical/legal analysis with limited empirical validation in diverse courts.
+11.
+Comparing LLM Text Annotation Skills: A Study on Human Rights Violations in Social Media Data; Poli Apollinaire Nemkova� [12]
+Association for the Advancement of Artificial Intelligence (AAAI) 2025
+
+Tested using zero-shot and few-shot prompting on a multilingual dataset of 1000 social media posts.
+
+GPT-4.0 demonstrated the highest overall performance (F1 0.84) and is recommended for high-stakes annotation tasks.
+
+The dataset focused on Russian and Ukrainian, which limits generalizability to other languages or dialects.
+
+12.
+Detecting Human Rights Violations on Social Media Using Machine Learning; Suleyman O. Polat,Poli Apollinaire Nemkova.. [13]
+Association for the Advancement of Artificial Intelligence (AAAI) 2025
+
+Employed transformer models (mBERT base, RuBERT, XLM-RoBERTa) for sentence-level classification.
+The top-performing model, mBERT trained on the Augmented Dataset, achieved an F2 score of 0.71 for HRV detection.
+
+The study faced challenges due to the highly imbalanced nature of the training data.
+
+13.
+Narratives of War: Ukrainian Memetic Warfare on Twitter; YELENA MEJOVA [14]
+Proceedings of the ACM on Human-Computer Interaction 2025
+
+Manual annotation was performed using a narrative framework based on moral quality and power.
+Narratives are a powerful predictor of content virality. Tweets with a �victim� narrative have the highest resonance.
+
+The study is limited by its unique setting and selection of specific accounts.
+
+14.
+Fine-Tuning BERT Model for Materials Named Entity Recognition; Xintong Zhao� [15]
+2021 IEEE International Conference on Big Data
+
+Fine-tuned BERT models (original BERT base and SciBert) for Named Entity Recognition (NER).
+The fine-tuned SciBert model achieved an overall f-score of 85.0% in materials named entity extraction.
+
+Previous research using task-specific models achieved a slightly higher performance (87%).
+
+15.
+An Empirical Study on Fine-Tuning Large Language Models of Code for Automated Program Repair; Kai Huang, Xiangxin Meng, Jian Zhang...[16]
+38th IEEE/ACM International Conference on Automated Software Engineering 2023
+
+Selected 5 Large Language Models of Code for fine-tuning: CodeBERT, GraphCodeBERT, PLBART, CodeT5.
+Fine-tuned LLMCs significantly outperform previous state-of-the-art Automated Program Repair (APR) tools across all scenarios tested.
+LLMCs suffer from the long sequence problem and limited input/output length, leading to a lack of necessary repair ingredients/context.
+16.
+LLM Platform Security: Applying a Systematic Evaluation Framework to OpenAI�s ChatGPT Plugins.; Umar Iqbal, Tadayoshi Kohno, Franziska Roesner [17]
+Seventh AAAI/ACM Conference on AI, Ethics, and Society
+
+Framework for systematic evaluation based on an attack taxonomy.
+The framework highlights numerous attack potentials, including Credential Exfiltration (Risk 1), LLM Session Hijack (Risk 2), and Functionality Squatting
+The fundamental
+challenge of securing LLM
+platforms lie in the ambiguity and imprecision of natural language used in interactions and policies.
+
+17.
+Security Attacks on LLM-based Code Completion Tools. Authors: Wen Cheng, Ke Sun, Xinyu Zhang, Wei Wang.[18]
+39th AAAI Conference on Artificial Intelligence (AAAI-25)
+Targeted jailbreaking (Hierarchical Code Exploitation Attack) and Code-Driven Privacy Extraction Attack strategies
+Achieved a 99.4% Attack Success Rate (ASR) in jailbreaking on GitHub Copilot.Successfully extracted sensitive user data from GitHub Copilot's proprietary training data
+Commercial LCCTs� safety alignment is extremely vulnerable, often because security training is primarily tailored for natural language, not code inputs.
+
+18.
+Anatomizing Deep Learning Inference in Web Browsers. Authors: Qipeng Wang, Shiqi Jiang, Zhenpeng Chen� [19]
+ACM Transactions on Software Engineering and Methodology, 2025
+
+DL frameworks Measured performance using new QoE metrics: Responsiveness, Smoothness, and Inference Accuracy.
+In-browser inference exhibited a substantial latency gap, averaging 16.9x slower on CPU and 4.9x slower on GPU compared to native inference on PC devices.
+WebGL suffers from severe cold start issues (up to 64.6x slowdown) due to time-consuming in-browser shader compilation during warmup.
+
+19.
+Participatorconstruction of futures for the defense of human rights: Paula Astrid Mendez Gonzalez... [20]
+Proceedings of the 16th Participatory Design Conference 2020
+
+Participatory design and speculative design using the DIVE methodology; Case study focused on rights NGO
+The approach enabled the NGO to explore alternative futures and identify strategies to face the potential threat of a "social setback" rooted in religious morals.
+The DIVE technique is designed specifically for small businesses, and its applicability to larger environments needs further exploration.
+
+20.
+Scalable Patent Analysis Using Function Calling with Local Large Language Models: Juan Jos� Garc�a Mesa [21]
+Practice and Experience in Advanced Research Computing (PEARC �25).
+
+Integrates local Large Language Models (LLMs) with function calling with locally hosted models.
+Developed an automated tool to streamline patent data retrieval, classification, and querying for university intellectual property management.
+The USPTO patent XML structure was highly complex and lacked dedicated parsing libraries, complicating data extraction.
+
+2.2. Key Gaps in the Literature
+Despite recent progress, the literature highlights several important gaps that motivate this work.
+1. Limited Generalizability and Cross-Context Adaptation
+Current research efforts are usually confined to particular geopolitical or linguistic environments. Namely, the work by Nemkova et al. [15] and Polat et al. [16] mainly relies on Russian and Ukrainian datasets, making it impossible to estimate the potential generalization capabilities of proposed approaches. Moreover, the models trained on large amounts of data in resource-rich languages, such as English, tend to exhibit inferior performance in multilingual or mixed-language scenarios. This becomes a significant limitation in the case of India, where code-switching and code-mixing are frequent phenomena.
+2. Data Scarcity, Imbalance, and Annotation Constraints
+Datasets related to human rights violations typically suffer from imbalance, where the number of samples in certain violation categories is substantially lower compared to the rest. Data augmentation techniques partially address the issue, but their effect is limited, failing to fully represent the variety of cases in practice. The manual labeling process introduces additional constraints due to its complexity, requiring considerable investments in terms of time and expertise. Recently, some researchers tried to leverage LLMs to facilitate annotation [15][23].
+3. Lack of Reasoning-Oriented Models
+Current research largely focuses on developing HRV detection models with classification-based architectures. However, the identification process often requires an implicit interpretation of context, sarcasm, and cultural peculiarities, all of which lie beyond the capabilities of a generic classifier. LLMs offer support for reasoning tasks by means of structured prompting. Still, there is no established method for embedding the reasoning process in a stable and scalable pipeline. Most modern models are centered around pattern recognition [3].
+4. Ethical and Participatory Limitations
+One common challenge identified by various sources is insufficient participatory engagement of affected communities in the data annotation process. In particular, Hancock et al. [8] note that this poses significant challenges related to informed consent and representativeness of samples. Meanwhile, biased datasets may generate discriminatory outputs in this setting, and this is especially dangerous for sensitive legal applications, according to Ali et al. [6]. Overall, this indicates a need for more rigorous and inclusive approaches to the development of such tools.
+5. Reproducibility and Deployment Challenges
+The majority of papers in the field does not publish code, annotated datasets, and testing environments, making independent reproduction impossible [20][21]. Apart from reproducibility, engineering challenges associated with scaling, inference efficiency, and potential threats arising from adversarial attacks have not been addressed either [20][21]. It has been previously demonstrated that there are concrete vulnerabilities exploitable in legal LLMs [20][21], meaning that their use requires far more substantial engineering considerations than what is usually provided.
+6. Weak Integration Between Legal Theory and Computational Models
+It could be argued that one of the most important problems in this area is the inability of most LLMs to effectively detect legal violations. While law operates within certain context, takes into account intent and proportionality of measures, most machine learning systems only focus on observable characteristics in the form of text. Embedding legal principles into LLMs remains largely an unexplored direction in the existing literature.
+
+
+Chapter 03: System Development
+This chapter provides details about the system design, its implementation process, and its actual requirements to ensure successful operation while detecting HRVs in multilingual social media posts. As opposed to theoretical researches, our main focus is practical application of the system; therefore, we should account for real-life hardware limitations, messy and unstructured nature of data, and problems associated with large-scale content annotation.
+The design is founded on three main principles:
+* Making it scalable even on modest hardware
+* Using Large Language Models (LLMs) for context-aware reasoning[22]
+* Having humans verify annotations for high-risk classification tasks
+Everything feeds into a single pipeline: data collection, multilingual pre-processing, LLM-based reasoning, parameter-efficient fine-tuning, and iterative validation.
+3.1. Requirements and Analysis
+The implementation of the LLM-based system for human rights monitoring poses additional challenges since it cannot be treated as just another machine learning solution where one needs to train the model and get predictions. First, there are specific issues related to token limit, inference latency, huge memory consumption, and reasoning accuracy that should be considered in regard to LLMs. At the same time, one should take into consideration other challenges such as lack of domain expertise on the part of annotators, interpretability of the results, and ethical considerations that affect the process. Hence, in addition to requirements related to hardware and software, there are additional aspects such as data quality and fine-tuning of models that must be taken into account.
+3.1.1. Hardware Requirement
+Since we focused on implementing the system with hardware constraints, our solution accounts for this limitation as well. One of the main problems associated with LLMs is their heavy computational power due to huge size and transformer architecture.
+
+The minimum setup we adopted includes:
+* 16GB GPU VRAM
+* Approximately 100GB storage
+* CUDA-enabled processing support
+In order to minimize latency and other problems, we opted for mid-sized models with parameters ranging between 3B and 9B; otherwise, it would cause excessive memory consumption, make fine-tuning impossible, and result in numerous out-of-memory errors. Alongside this approach, we utilized some strategies such as 4-bit quantization and parameter-efficient fine-tuning (PEFT).[23]
+3.1.2. Performance over Multilingual Content
+One of the more difficult aspects of designing the solution was handling multilingual and informal text data, especially from the social media domain. Handling such type of text requires more sophisticated approaches since it contains a variety of artifacts like code mixing, slang, emojis, culturally bound expressions, and many other elements that are outside of a standard natural language processing pipeline.
+Therefore, we had to make sure that our system achieves semantic consistency when performing all types of operations, be it translation, normalization, or tokenization. In particular, our system is optimized to:
+* Handle non-English inputs efficiently
+* Keep things consistent across translation pipelines
+* Support near real-time processing during annotation workflows
+It is critical to understand that when dealing with annotation workflows, all operations usually require sequential processing. Thus, once there is an inconsistency introduced, it affects the whole workflow.
+
+
+
+3.1.3. Precision and Reasoning in Output
+Unlike a regular classification task, our solution generates structured reasoning for each prediction. The output of our solution contains two main components:
+* A classification label (Yes/No, along with a category)
+* A justification that explains why the model made that decision
+This is a convenient feature for gaining explainability of the model, yet it brings another constraint, making sure that the model does not hallucinate, reasoning is consistent, and a classification label corresponds to justification provided. All those were handled with special care in terms of prompt design and instruction-based fine-tuning. This element becomes crucial in providing domain experts with a tool for validating predictions made.
+3.1.4. Management of Prompt and Information fed
+This pipeline provides structure for organizing various forms of input (including raw data, its translations, annotations, and prompts). Although this may appear to be an insignificant detail, failure to pay attention to it can lead to severe issues. One of such issues may be label leakage, in which a model gets to learn about data formatting instead of understanding its meaning.
+To prevent this, the design includes:
+* Clear input-output structures (instruction ? input ? response)
+* Controlled tokenization that preserves context
+* Sequence length management to avoid truncation
+All this allows the model to learn generalizable patterns instead of memorizing particular samples present in the training set.
+3.1.5. Usefulness among highly unbalanced data
+It must be mentioned that human rights violations represent a small minority of all cases presented in the datasets (only around 5�6 percent of all samples). This causes severe problems with regard to class imbalance. In the absence of necessary measures, machine learning models are inclined to predict the majority class, which would yield near-perfect accuracy while being meaningless in practice.
+We addressed this problem through:
+* Weighted loss functions
+* Balanced sampling methods
+* Careful dataset selection
+The most important step not included in our efforts was synthetic data generation. While useful in many cases, we believe that it would have introduced unrealistic patterns to the datasets.
+3.1.6. Evaluation and Verification Requirements
+We created the evaluation framework to gauge both accuracy and interpretability. In a field like this, having the correct answer isn't enough; you also need to explain why. The system uses a combination of numerical metrics and descriptive methods:
+Quantitative metrics:
+* F1-score (primary metric due to imbalance)
+* BLEU and ROUGE (to assess reasoning quality)
+Qualitative methods:
+* Expert review of generated explanations
+* Consistency checks across similar inputs
+This combined approach helps ensure that the system produces results that are both reliable and interpretable, which is absolutely essential when you are working with something as sensitive as human rights monitoring.
+3.2. Project Design and Architecture
+This approach enables the development of a modular, end-to-end system that incorporates data collection, pre-processing, model training, and evaluation processes. In this way, any changes to particular components can be introduced without redesigning the entire pipeline.
+
+The architecture includes the following stages:
+* Data Collection
+* Pre-processing and Translation
+* Annotation
+* Model Selection and Fine-Tuning
+* Evaluation and Feedback Loop
+This structure gives us the flexibility to iterate quickly and makes long-term maintenance much more manageable.
+3.2.1. Data Collection and Pre-processing
+The proposed solution is based on a multilingual dataset collected by us from the actual conflict settings, primarily the Russia�Ukraine war. Our data sources included Telegram channels since they were characterized by less censorship, frequent updates, and diverse perspectives. The dataset includes around 89,000 posts obtained via Telegram APIs.
+Key Challenges in Data Collection
+* Unstructured and noisy data:
+Social media data is unstructured and prone to errors. These documents contain slangs, incomplete phrases, inconsistent formatting, among others, making them difficult to work with automatically.
+* Multilingual content:
+The majority of posts are in Russian, which means translation is required before annotators are able to annotations meaningfully.
+* Loss of context:
+Human rights abuses cannot always be described using text; sometimes, images and videos are needed, but since our current focus is on text posts, this context is inevitably lost.
+
+* Translation as a Core Step
+Translation was considered a crucial semantic transformation rather than a basic preprocessing procedure since even minor flaws could distort the original meaning. We tested three techniques:
+o Google Translate: High precision, but associated with costs
+o Open-source models: Fair performance, but lower context preservation
+o LLM-based translation: More precise preservation of context
+We ended up going with Google Cloud Translator, because they:
+* Preserve tone, including profanity
+* Handle informal and humorous language well
+* Maintain contextual meaning across sentences.
+This improves the quality of both annotation and model trainng.
+Various translation LLMs have been applied to reduce the processing time. It should be noted that there still occurred some instances when the output appeared to be in the Chinese language instead of being translated into English; this is another proof of imperfection of these models.
+In Fig. 3.1, the detailed pipeline flow of the dataset gathering is depicted, obtained dataset is passed through two blocks, which are filtered in translated and non-translated, translated here means readable English. For non-translated posts, translations LLMs are used such as custom fine-tuned gemma for most Russian posts, and Google API for Persian and Spanish Languages. Then using a free trial GPT4.1 API, a set of 100 samples are compared in terms of classification into HRVs.
+If accuracy is greater than 0.9, the winner method is used for further annotations into 15000 samples of each dataset, to obtain 5% Yes samples from it.
+
+
+3.2.2. Model Selection and Architecture Design:
+The selection of the LLMs we wanted to implement in the system depended mainly on practical reasons such as hardware requirements, accessibility of global utilization, etc. The focus was made on the models of the 3B�9B parameters range due to the balance between performance and efficiency. LLMs in this range can be tuned for training on modest GPU power (and even in Kaggle, for instance), have acceptable storage requirements, and do not take much time during inference. All the optimization procedures were crucial for us since we had to minimize the usage of memory, accelerate inference, and stabilize training.
+
+
+3.2.3. Training and Optimization:
+Our training process was influenced by class imbalance in the data. In most batches, only 10�15 out of 100 samples refer to violations of human rights. Thus, the model struggles to learn patterns due to an abundance of negative samples which increases the probability of predicting a false positive result. To address the issue, we used carefully crafted sampling and validation techniques to ensure that the model learns correctly without being prone to predicting "no violation" for any situation.
+3.2.4. Implementation and verification of Framework:
+The verification process was necessary since the mere training of the models was not enough for our purposes. For that, the participation of human rights experts in annotation and verification process has been arranged to compare the predictions of the model with an opinion of a domain specialist. This stage was extremely important as LLMs tend to generate credible explanations that are far from truth. Hence, the presence of experts helps to detect and fix such errors and align predictions with domain expertise.
+3.2.5. Iterative Refinement and constant Feedback:
+Assessment of LLMs is quite different from other machine learning models. Training loss cannot be regarded as an indicator of progress as it tells nothing about the effectiveness of reasoning and generation of explanations. Overfitting detection is complicated, and the actual improvement of LLMs' predictions and explanations in consecutive training stages is uncertain. Therefore, we designed our system around the principle of iterative refinement, which can be supported by evaluation techniques and feedback from users to identify issues with predictions and explanations.
+3.2.6. Ethical Considerations and Censorship:
+We faced some difficulties related to ethical considerations during data preparation and training. The dilemma was whether to sanitize and censor the training data or leave it as is. While we aimed to create an ethically responsible algorithm, it is vital that the LLM learned the features of social media language including offensive slang, profanity, humor, sarcasm, aggressiveness, and many more. The solution here was to leave training data intact despite ethical considerations.
+3.3. Data Preparation
+3.3.1. Data Platform Choosing
+The focus of our dataset for this study is the conflict between Russia and Ukraine, and due to the nature of the data collection (social media), the choice of platform becomes essential for further processes such as obtaining the data, enhancing it for fine-tuning purposes, and ensuring good performance of the model in the end. Thus, we decided to obtain a dataset that would represent real-life data by being informal, uncensored, and contextualized. Some of the factors considered when choosing our platform included the following:
+A. Uncensored Data: The model requires exposure to realistic examples, which often include violent or abusive behavior. As many social platforms tend to filter out such posts, this factor significantly restricts the amount of data and the representation of the reality within it.
+B. Variation of Data: The dataset required to be varied enough so that the model could learn and classify all the types of human rights violations rather than those that occurred more often.
+C. Familiarity of Data: Posts are written in different languages depending on the region and the circumstances. For our project, the language used in the dataset is Russian, although in the future there might arise a need to use more languages.
+D. Profiles: The data is sourced from various accounts � famous individuals, politicians, government organizations, news sources, and creative professionals. This helps to obtain direct and indirect narratives needed for our model.
+There were three platforms considered for obtaining data: Twitter, Reddit, and Telegram. Although Twitter has enormous amounts of data, it is extremely difficult to filter them according to the required criteria. Reddit offers organized communities with low post activity regarding this issue. Telegram was chosen as the main source of data.
+
+
+
+3.3.2. Data Gathering
+Data collection involved identifying and curating around 50 Telegram channels related to the Russia-Ukraine war. We made sure to include channels from both sides of the conflict to reduce bias and improve the overall balance of the dataset.
+The posts in the dataset range from formal reporting to very informal commentary, covering supportive, opposing, and neutral viewpoints. This variation is important for training because LLMs naturally default to formal language. If you do not expose them to informal and context-dependent communication during training, they will not know how to handle it at inference time.
+Data extraction was done using Telegram APIs. We collected channel identifiers, sampled post IDs, and used those to pull raw content. Each channel contributed roughly 5,000 posts, giving us a final dataset of approximately 89,786 posts, almost entirely in Russian.
+Some posts do include images or videos where violations are clearly visible, but we are only using textual data at this stage. Incorporating multimodal elements is something we have flagged as a direction for future work.
+
+
+3.4. Implementation
+3.4.1. Data Translation
+The entire corpus is written in the Russian language; hence, understanding its content and annotating it proved to be impossible. The best approach would have been to translate the corpus to English to facilitate further operations. The following tools were considered before choosing one that met our requirements.
+A. Google Translator API Basic
+Google Translate is the best tool in translating massive amounts of texts continuously, censor-free with great understanding of the context and humor involved. However, it is rather expensive as it costs a lot and uses API, which makes prices grow rapidly.
+B. Libretranslator
+This tool does translate large volumes of text very quickly; however, when it comes to humor and keeping up with the context, it fails badly. This tool suits only factual texts, whereas the posts we were working with did contain a considerable number of jokes and humor elements.
+C. MarianMT and Facebook/nllb-200-distilled-600M
+Both these models are larger than the ones we tried earlier, and they translate a little bit better than Libretranslate and MIT Translate. They both fail to translate the text containing humor or any other types of daily conversation because they end up producing nonsense.
+D. Qwen 2.5 Multilingual 7B
+After spending a lot of time trying different approaches, we realized we needed to move to LLMs for translation. They require GPUs and take considerably longer, but the quality of the translations is significantly better, though still a notch below Google Translate. Among the LLM options, Qwen 2.5 came closest to what we needed for multilingual translation.
+E. Gemma 2 Multilingual 8B Fine-Tuned
+While searching HuggingFace, we found a pre-fine-tuned version of Gemma2 from BAAI (one of the biggest open-source language contributors). This model had been fine-tuned on conversations across multiple languages, which made it a strong but long expense of time fit for our use case.
+In the end we completed half of our translations with finetuned Gemma2 and for the rest we used Google Translator API. Here are the examples for better comparison:
+* Post (Russian): �??????????, ??????? ?? ?????, ????? ??*???, ??*??. ????? ??? ???*?! ?? ???????????? ????????-???????? ????????? ??????? ?????? ??-?? ?????????? ?????????.�
+* Google Translator (English): �"If you're unhappy, take a taxi, you fucking whores, f*ck off! F*ck off everyone!" In Vladivostok, a Caucasian driver cursed at elderly women because of a remark he made.�
+* Qwen 2.5 (English): �Unhappy? Take a taxi, you bitch, fuck off. Go to hell! A Caucasian driver in Vladivostok swore at elderly women after they asked him to put it down.�
+* Gemma2 Fine-tuned (English): �Unhappy? Take a taxi, you fucking whores, damn it! Go fuck yourselves, everyone! In Vladivostok, a Caucasian driver cursed at elderly women after they made a complaint.�
+3.4.2. Data Annotation
+Initially, we tried to automate the annotation process using high-end paid LLMs, Anthropic's Claude, ChatGPT5, Grok4, and Llama 3.1. The idea was that models with over 200 billion parameters should be able to handle this task. But in practice, they performed surprisingly poorly. For every 100 samples, the LLM accuracy rate was only around 40%, which is nowhere near good enough for building a fine-tuning dataset.
+After manually going through about 200 random samples from the dataset, we identified four broad categories that human rights violations tend to fall into:
+* A: Killing or injury of civilians
+* B: Destruction of civilian objects (homes, hospitals, schools, markets)
+* C: Rape, torture, or execution
+* D: Mistreatment or torture of prisoners/detainees
+After two weeks of trying to make automated annotation work, we accepted that manual annotation was our only realistic option. We randomly selected 15,000 samples from the full 89K dataset and annotated them ourselves within the project deadline.
+The annotation process was regulated on two platforms:
+i) Label Studio
+Label Studio is an open-source Python program that provides a web-based UI for labeling tasks. It requires CSV input and a proper labeling configuration, which makes it workable for small, well-defined sample sets. However, it becomes cumbersome with larger datasets, and the initial setup is not exactly intuitive.
+
+
+ii) Gradio
+For faster annotation and labeling, we decided to build our own custom GUI using Gradio, a Python-based web UI package. We designed it specifically for our workflow, and it gave us much better readability and a smoother annotation experience compared to Label Studio.
+
+
+
+
+3.4.3. Data Restructuring
+After the completion of the annotation process, the subsequent task involved formatting the annotated data according to the requirements of the LLMs for fine-tuning purposes. Upon examining the necessary literature and studying the most popular prompt templates, we reformatted our category labels into detailed descriptions. Here is how that works:
+A. LLMs Prompt Templates
+After researching multiple papers, we came to the conclusion that using the original prompt templates that the models were trained with gives better generalization than modified templates like the Alpaca Prompt Template. So we kept things standard and instead modified the tokenizer code to adapt to the required format.
+
+
+
+The standard instruction JSON format is easy for the transformers library to convert into the required ChatML template. Strictly speaking, using this exact format is not mandatory, but since it makes the work easily understandable and reproducible, it made sense to adopt it.
+We also prepared the specific ChatML templates that each LLM expects, since fine-tuning works best when you use the template format the model was originally designed for. You can technically force a model to use a different template, but from our experience, this leads to higher loss and the model tends to overlook important patterns.
+
+
+
+
+
+
+
+
+B. HRV �Yes� Samples
+* A (Killing or injury of civilians): Yes, this post is about a human rights violation where military or government forces intentionally harm or kill civilians. It can be direct attacks on unarmed people, use of lethal force or actions that result in civilian casualties. Focus is on violence against non-combatants.
+* B (Destruction of civilian objects (homes, hospitals, schools, markets): The post reports a human rights breach in which people deliberately wreck civilian property or infrastructure. It covers assaults on houses, apartment blocks, hospitals, schools, water plants, power grids and other facilities civilians need. The damage is aimed at civilians - its purpose is to scare them, force them to leave or injure them.
+* C (Rape, torture, or execution): Yes, this post describes a human rights violation involving sexual violence, severe torture, or execution. It includes acts intended to cause extreme suffering, coercion, fear, or death. The emphasis is on serious bodily harm or coercive, violent actions against individuals.
+* D (Mistreatment or torture of prisoners/detainees): The post reports a human rights breach that involves sexual violence, severe torture or execution. It records acts meant to inflict extreme pain, force submission, spread fear or kill. The focus rests on grave bodily injury and on violent, coercive acts against a person.
+* A, B: The post reports multiple human rights violations - people deliberately hurt and homes or basic services purposely wrecked. Civilians face direct attack - their houses or key installations suffer damage or total loss. The account shows violence against persons together with violence against the structures they depend on.
+* A, C: Yes, this post contains multiple human rights violations including harm or killing of civilians and sexual violence, torture or execution. Civilians are not only attacked but also subjected to extreme violence. This is high intensity violence against civilian population
+* A, D: Yes, this post contains human rights violations involving direct harm or killing of civilians and abuse or mistreatment of detainees. Civilians are attacked outright while those captured or detained are subjected to coercion, intimidation or degrading treatment. This is violence in open and in detention
+* C, D: Yes, this post contains multiple human rights violations including sexual violence, torture or execution, mistreatment or coercive abuse of detainees. This is extreme violence and abusive treatment of individuals in custody or under control.
+C. HRV �No� Samples
+For all no samples we have �No, this post does not contain any human rights violation. No harm to civilians, no destruction of civilian property, no sexual violence, no torture, no execution, no abuse of detainees. Content is neutral and does not meet human rights violation.�
+Then we have converted the dataset into these instruction, input and output pairs:
+
+
+3.4.1. LLM Fine-Tuning
+In order to perform the fine-tuning, we picked three pre-trained models with 7B to 8B parameters: LLaMA 3.1 8B, Mistral 7B, and OpenHermes2.5 7B. We decided not to go for one model in order to provide more balance and identify which model architecture generalizes better. All three models share a single training pipeline except the set of the trainable parameters according to each architecture.[24][25]
+
+The Tokenizer.py is an encoding layer that encodes the data from our Alpaca-format dataset into token form required for processing by the LLMs:
+* Input text is tokenized as "Text" with a fixed maximum sequence length of 1024 tokens.[26]
+* Right-side padding is applied to keep the input size uniform, ensuring that the actual content stays left-aligned.
+Considering that we need to fit our fine-tuned models into 15GB GPU limit, we used 4-bit quantization provided by BitsAndBytes library:
+* The double quantization feature is turned on, which additionally helps with reducing the memory footprint as it quantizes already quantized values.
+* NF4 (NormalFloat 4-bit) quantization method is chosen since it works well with weight distributions that usually occur in transformers.
+Loading of the model occurs with the help of the AutoModelForCausalLM class and quantization options specified during loading with device_map="auto" that loads model components into GPU memory most effectively.
+After loading:
+* The prepare_model_for_kbit_training() function adapts the model for low-bit training.
+* Base model weights are frozen, and gradient updates are restricted to only the selected trainable components.
+For parameter-efficient tuning, we implemented Low-Rank Adaptation (LoRA) under the PEFT framework:
+* Rank r = 8 defines the dimensionality of the low-rank update matrices.
+* Scaling factor ? = 16 controls how much the adapted weights contribute.
+As a result, the amount of the trainable parameters in such configurations will be equal to only 1% of the original size of the model and thus, will allow effective fine-tuning of the model even in cases when there is no access to the powerful infrastructure.
+The LoRA adapters target the following neural network components:
+* Attention mechanism components:
+o q_proj: The q_proj layer takes the hidden state and converts it into a query vector. This vector is what tells the model what info its currently looking at should "go and find" from other positions in the sequence - it effectively sets the direction of its attention. By projecting the token info into an attention-query space, the model gets to decide where to focus its attention. LoRA likes to target q_proj because it lets the model learn new ways of focusing on certain words etc, all without having to change the entire weight of the model - nice and efficient
+o k_proj: The k_proj layer generates key vectors. Think of these as the keywords that each token has to "offer up" to the attention mechanism. When the model meets another word, it's looking at, the interaction between the two determines just how much attention the first word gives to the second one. And with a bit of fine-tuning to the k_proj, LLMs can become more sensitive to certain "linguistic indicators", like when they're dealing with violent words or certain context clues in HRV detection
+o v_proj: The v_proj layer pulls in all the valuable info from the attention mechanism and stores it in value vectors. Then once the model's worked out how much attention to give to each word, it applies those weights to the values and then passes that info on to the next layer. And yep, by fine-tuning the v_proj, the model can pick up on new domain-specific stuff without needing to change the whole attention block.
+o o_proj: The o_proj layer takes all the output from the attention heads, jumbles them together and then maps them back out to the model's hidden dimension. That way it can stitch together all the different bits of attention into one nice clean representation for the rest of the layers to work with. Targeting the o_proj in LoRA fine-tuning lets the model adjust how all these domain-specific attention patterns influence the final representation of the context
+* Feed-forward Network Layers:
+o gate_proj: It performs non-linear transformation that filters out the information going forward as an output of the FFN module. In other words, gate_proj serves as a gate allowing to select just enough FFN output to pass through. Recently, many transformer-based models began using gated linear units (GELU or GLU) where projection is responsible for setting the activation limits. Fine-tuning this parameter allows tuning the filtering mechanism of the model and thus, making it ignore unnecessary linguistic data (e.g., slang or incomplete texts used in social media posts).
+o up_proj When using up_proj, we essentially expand the embedding dimensions to a certain intermediate value. This makes our FFN able to extract higher-order interactions in terms of semantical context, which would have been impossible to achieve before. Tuning of this parameter allows significantly improving performance of your models in terms of categorizing HRVs and distinguishing various categories from each other.
+o down_proj: Unlike up_proj, it projects the output of the feed-forward network back to the original hidden size thus completing the transformation. This layer determines how you compress abstract high dimensional features of the language obtained by the FFN to a low-dimensional form ready for use in further analysis.
+
+
+This approach will only work for consumer-grade hardware which allows implementing minimal GPU requirements. LoRA models will serve as weight distribution that will allow finding a right path for the LLMs towards desired results.
+
+
+This is all done with respect to the setting up of the training and testing. This code is especially designed for a smooth training process that would be done without any "Out of Memory" error occurring, which is very common in the training of LLMs and transformers.
+3.5. Key Challenges
+There were several practical issues we faced throughout this work and needed significant time to solve them. These issues were:
+3.5.1. Dataset Gathering and Annotation
+The most significant limitation in the use of the datasets was limited time for the creation of annotations. Limited use of data restricts the model's learning capacity and reasoning skills. Maintaining annotation quality while working under tight deadlines made things even harder.
+We ended up adopting a partial approach:
+* Post IDs were randomly sampled, ensuring sufficient textual content.
+* Non-textual elements such as videos and images were excluded.
+* Each sample was manually annotated.
+This process gave us approximately 11,000 labeled instances with an estimated annotation accuracy of 96%. The dataset includes posts from the Russina-Ukrain war, along with Iran and Venezuela based datasets that we added to improve diversity and coverage.
+3.5.2. Translation
+The task of translating non-English content, mostly Russian posts, into English for both annotation and training models proved to be among the most challenging tasks. The dataset also contains content from Iran and Venezuela; thus, multilingualism became crucial in the process.
+Effective translation required:
+* Support for long-context inputs
+* Ability to interpret informal language, including slang and humor
+* Handling of sensitive or offensive expressions
+Translation attempts made using LLM demonstrated issues such as hallucination (the model adding invented elements to the translation) and unnecessary explanation accompanying the translation. Nonetheless, LLM-based translation still remained our preferred choice due to the flexibility and diversity of linguistic constructions handled by that method. The downside is a longer processing time.
+3.5.3. GPU and Necessary tools
+Hardware limitations had a significant impact on both training and pre-processing:
+* Limited GPU memory restricted the maximum input context length.
+* Smaller batch sizes led to less stable training and a higher risk of overfitting.
+Software constraints also introduced challenges:
+* Frameworks such as PyTorch and CUDA require strict version compatibility.
+* Tools like Unsloth improve efficiency on low-resource systems, but dependency mismatches made setup difficult.
+As a temporary solution, we used Kaggle GPUs. However, the weekly runtime limit of 30 hours and restricted GPU memory continued to constrain how much experimentation we could actually do.
+3.5.4. LLMs
+As our computations are rather limited, almost all of our experiments were performed using 7B�8B models, which are efficient and practical to use. However, it should be noted that the models of this size do have certain limitations related to their ability to reason.
+To achieve significant progress in the development of reasoning capabilities of large language models, the following steps should be taken:
+* Larger and more diverse datasets (typically exceeding 100K samples)
+* Careful data curation to ensure meaningful and context-rich inputs
+In absence of such data, any fine-tuning will lead to mere memorizing of superficial patterns.
+
+
+3.5.5. Testing
+Given the scarcity of relevant prior research in the field, automated metrics alone are not enough evaluation requires human validation.
+Our Test Procedutre is:
+* Distributing approximately 200 samples to human evaluators
+* Selecting individuals with domain knowledge in identifying human rights violations
+* Comparing model predictions with human judgments
+For now, testing is being done on a part of data, the expert validation of results is yet to be done, specifically for verifying precision and recall scores.
+
+
+Chapter 04: Testing
+4.1. Testing Strategy
+
+
+
+4.1.1. Overview
+The testing/validation procedure will have several layers. The objective will be to test and validate three fine-tuned LLMs - LlaMA 3.1 8B Instruct [1], OpenHermesB Instruct, and Mistral 7B Instruct v0.3, as well as evaluate their actual performance in the domain of HRV detection.
+Both LLaMA and Mistral were fine-tuned for detection of human rights violations using the dataset based on the Russia�Ukraine war situation, while being additionally trained using the Iran and Venezuela datasets in order to prevent the overfitting issue. Samples were delivered in the form of Alpaca prompts and kept uncensored to allow evaluation of the model's capabilities in terms of reasoning.
+The evaluation strategy covers several angles:
+* Automated analysis of quantitative aspects such as quantization performance
+* Self-evaluation through training loss trends
+* Testing across varied input formats to assess robustness
+* Prompt design adjustments to reduce hallucination
+Key architectural and modeling challenges include:
+* Sensitivity to temperature during text generation
+* Distinguishing human rights violations from general criminal activities
+* Structural differences across models, such as RMSNorm in LLaMA and GQA in Mistral
+The framework is divided into six evaluation layers:
+Layer 1: Functional Check
+This layer will test operationality:
+* Successful model loading without runtime failures
+* Correct handling of input prompts and tokenization
+* Initial detection of hallucinated or irrelevant outputs
+Layer 2: Metric-Based Evaluation
+The outputs will be evaluated via metrics of comparison between the model's predictions and the actual data labels:
+* F1 Score for class balance evaluation
+* ROUGE for textual similarity
+* Accuracy and Exact Match (EM) for strict correctness
+Custom thresholds are defined to account for domain-specific tolerance levels.
+Layer 3: Semantic and Answer Evaluation
+Output manual analysis will determine:
+* Semantic correctness and alignment with input intent
+* Clarity and coherence of generated responses
+* Logical consistency and absence of contradictory reasoning
+Layer 4: Comparative Analysis
+This layer evaluates performance of the model depending on the configuration:
+* Pre-training vs post fine-tuning performance
+* LoRA vs QLoRA adaptation techniques
+* Cross-model comparison among LLaMA, OpenHermes, and Mistral
+* Metrics such as consistency, failure rates, and accuracy trends are analyzed.
+Layer 5: Bias and Robustness Testing
+The model performance will be tested under different input modifications:
+* Presence of typographical errors or noisy text
+* Incomplete or ambiguous sentences
+* Mislabelled HRV cases
+Layer 6: Feedback Loop
+An iterative improvement cycle is applied:
+* A/B testing of prompts and configurations
+* Refinement of datasets and annotation quality
+* Continuous updates based on observed failure cases
+* This process is conceptually aligned with reinforcement-style optimization, though not strictly RL-based.
+4.1.2. Testing Methodology
+Phase 1: Model Loading and Initialization
+This stage is used for validating the system setup at the unit level:
+* Checking for correct implementation of PEFT-based LoRA adapters
+* Validating the 4-bit NF4 quantization using BitsAndBytes configuration (bnb_config)
+* Correct implementation of the tokenizer parameters, particularly padding tokens
+* Deterministic inference by setting use_cache = False
+* Validating the device mapping and multi-GPU sharding, if needed
+This stage ensures that the system is stable for further stages of execution.
+Phase 2: Inference Validation
+This stage tests the validity of the prompt-response pipeline:
+* Testing with structured prompts following instruction-tuned formats
+* Inclusion of diverse inputs such as humorous, sarcastic, and ambiguous posts
+* Verification of model responses against expert-labelled interpretations
+* Identification of hallucinations, overgeneralizations, or irrelevant outputs
+Phase 3: Quantitative Analysis
+A limited evaluation is done on an initial set of 50 samples:
+* Binary classification accuracy for HRV detection
+* F1 score to balance precision and recall
+* Exact Match (EM) accuracy for strict label agreement
+* Similarity-based metrics to compare generated explanations with reference outputs
+This phase provides an early numerical benchmark of model performance.
+Phase 4: Qualitative and Human Evaluation
+An expanded evaluation is done on an expanded set of roughly 200 samples:
+* Human annotators assess reasoning quality and classification correctness
+* Comparison between human judgment and model predictions
+* Identification of edge cases where models fail despite correct labels
+This phase is critical for validating real-world applicability, especially in sensitive domains like human rights analysis.
+Phase 5: Test Data Composition
+The sample size in the evaluation set is 3,146 samples of HRV, which have been manually labeled with good quality. The dataset also contains samples from the Russia�Ukraine war, as well as Iran and Venezuela datasets.
+Key characteristics:
+* Balanced class distribution (approximately 1:1 ratio)
+* Subset of 4,000 samples explicitly divided into 500 �Yes� (HRV present) and 500 �No� (HRV absent) cases
+* Sources include:
+o Reports from United Nations
+o Social media platforms such as Telegram and Twitter
+o Selected uncensored sources to preserve original context
+This composition ensures that the evaluation covers both formal and informal content, enabling a comprehensive assessment of model performance across varied data conditions.
+4.2. Test Cases and Outcomes
+The evaluation stage included the testing of the fine-tuned LLMs using various controlled conditions to ensure that the analysis conducted during the evaluation stage will be valid and accurate. The dataset used for testing includes cases from the Russia�Ukraine war, Iran (Farsi), and Venezuela (Spanish).
+First, we decided on the structure of the output produced by the model. As all outputs start with either "Yes/??/S�/???" or "No/???/??", we are able to formulate the task of evaluation as a binary classification problem, which is more convenient because it allows calculating well-established metrics, such as precision, recall, and F1-score [16]. However, given the nature of the problem, it is crucial to take into consideration the F1-score as the measure that reflects both precision and recall of classification since both false negatives and false positives have certain implications.
+To evaluate classification on the level of categories, we need to split the available HRVs into four classes. However, as the outputs of the model are generated in free form, direct comparison of the predicted values and the correct answers is impossible. To determine the class which is addressed by the response, we use a string-matching technique, which is implemented in the extract_hrv_labels() function:
+* It parses generated text to detect category-specific keywords or patterns
+* It maps responses to one of the predefined HRV categories
+* It operates as a heuristic layer rather than a deterministic classifier
+
+That said, this function is still experimental, and it has some known limitations:
+* It can fail when the model uses implicit reasoning rather than explicit keywords
+* It sometimes misclassifies outputs when the phrasing varies significantly from what the heuristic expects
+* It is sensitive to multilingual variations across Russian, Farsi, and Spanish
+Because of the aforementioned limitations, human validation is required in order to avoid any potential misclassification and guarantee that the answer is meaningful and correct.
+The evaluate_generation() function serves as an evaluation pipeline, which allows conducting comprehensive end-to-end evaluation of the generated outputs and calculating metrics:
+* Binary classification metrics: accuracy, precision, recall, and F1 score
+* Exact Match (EM) for strict label agreement [18]
+* Text similarity metrics for comparing generated explanations with reference outputs
+* Response consistency across repeated prompts,  to check whether the model gives the same answer when asked the same question multiple times
+This function integrates both classification-based and generation-based evaluation, which makes it well-suited for LLM tasks where outputs are not neatly structured.
+The overall evaluation workflow looks like this:
+* Map generated responses to binary labels using the Yes/No format
+* Extract HRV categories using the string-based heuristics
+* Compute quantitative metrics across all predictions
+* Compare results across different models and configurations
+* Validate outputs through human review for semantic correctness
+This hybrid strategy ensures that our assessment is not solely based on quantitative metrics. It further takes into consideration the reasoning process, language diversity, and contextual accuracy in Russian, Farsi, and Spanish datasets, an aspect that becomes critical once you have to work with actual multilingual social media content.
+Ultimately, it is these tests that allow us to trust the fine-tuning procedure since they guarantee that the models do not only learn shallow classification boundaries but also remain interpretable and robust against multilingual and domain-specific instances [4].
+Ultimately, it is these procedures that enable us to trust the fine-tuning process since they guarantee that the models do not only learn shallow classification boundaries but also remain interpretable and robust against multilingual and domain-specific instances.
+
+Chapter 05: Results and Evaluation
+5.1. Results
+This chapter is dedicated to presenting the results obtained by fine-tuning our models and describing the metrics used to evaluate their performance. We have evaluated three language models - LLaMA 3.1 8B Instruct [1], Mistral 7B Instruct v0.3, and OpenHermes2.5 7B Instruct - using the same dataset. The latter contains examples taken from the Russia�Ukraine war, as well as the Iran (Farsi) and Venezuela (Spanish) datasets, allowing us to measure the models' ability to perform well in different languages and situations.
+The results will be divided into two sections, depending on the metric: (i) text generation and similarity-based evaluation and (ii) HRV label-based evaluation. The rationale for the dichotomy is based on the necessity of assessing two distinct features of the models, namely, the degree of adherence to instruction and hallucinations in the text generation and classification accuracy.
+5.1.1. Text Generation and similarity metrics
+In the first case, we evaluate the quality of the generated texts by comparing the response generated by the language model to the reference text. Our aim was to measure how well models adhere to instructions and how often they produce hallucinated facts. Since LLM responses are unstructured and stochastic, if you repeat the request to a model, the answer may vary slightly, hence the need to consider several complementary metrics.
+A.  Exact Match (EM)
+Exact Match is one of the most stringent metrics. It shows the proportion of generated responses that are identical to the reference text character-by-characte:
+* It is a strict metric: even small deviations reduce the score.
+* It helps evaluate whether the model can produce fully correct and controlled outputs.
+* It is particularly relevant for instruction-following tasks where format and wording matter.
+However, EM alone is insufficient for the evaluation of LLMs because the response can match the semantic meaning of the reference text but differ in wording, which would negatively affect the result. Therefore, soft metrics must also be considered.
+B.  BLEU (Bilingual Evaluation Understudy)
+BLEU evaluates how much overlap there is between the generated text and the reference based on n-gram matching [18].
+* It captures similarity in phrasing and structure rather than requiring exact replication.
+* Higher BLEU scores mean the generated text is more closely aligned with the reference.
+* It works well when slight variations in wording are perfectly acceptable.
+BLEU gives us more flexibility than EM, but it still focuses primarily on surface-level similarity, it does not really understand meaning, just word overlap.
+C.  ROUGE Metrics (ROUGE-1, ROUGE-2, ROUGE-L)
+ROUGE metrics take things a step further by focusing on recall and sequence overlap:
+* ROUGE-1: Measures overlap at the individual word level (unigrams).
+* ROUGE-2: Measures overlap of word pairs (bigrams), which captures short phrase structure.
+* ROUGE-L: Uses the longest common subsequence (LCS) to evaluate sentence-level similarity.
+These metrics can be quite helpful when trying to figure out to what extent the significant part of the content was generated in the answer. In comparison with BLEU, ROUGE pays more attention to how many important things were mentioned in the output, than to how exactly they were said.
+5.1.2. HRV label metrics
+While the text similarity metrics measure linguistic aspects of the text generated by the model, HRV label metrics assess the model's ability to classify the input text correctly and give valid reasons why certain text should or should not be classified as an HRV-related document. For the evaluation, we will consider model outputs that contain both yes�no answers (whether the text is an HRV-related document or not) and category predictions. The evaluation dataset contains data related to the Russia�Ukraine war, as well as Iran and Venezuela.[16]
+A.  Severity Accuracy
+This metric measures whether the predicted HRV severity level corresponds to the reference level:
+* It allows us to understand how well the model evaluates the intensity of HRV, not just its presence in a specific document.
+* The prediction of severity level can be misleading downstream and influence the decisions that need to be made regarding the document.
+B.  Category F1 Scores (CAT F1)
+The F1 score is used to assess model classification performance in the HRV label task, where there are four possible classes. There are several kinds of the same metric:
+* Micro F1: the aggregate score for all predictions made by the model;
+* Macro F1: he score for each class individually, where the number of examples is not taken into account;
+* Weighted F1: takes class imbalance into consideration, where classes are weighted according to their frequencies.
+Using all three metrics gives us a better idea of what is going on with the model's classification performance [16].
+C.  Category Accuracy (CA)
+Category Accuracy is the most straightforward metric, it simply measures the proportion of correctly predicted categories.
+* It gives a quick snapshot of overall correctness.
+* Things get trickier when multiple categories appear in a single response, though.
+* In those cases, partial matches can still carry useful information even if the accuracy metric does not fully capture it.
+D.  Binary Decision Metric
+This metric evaluates the model's ability to correctly classify responses as "Yes" (HRV present) or "No" (HRV absent).
+* It reduces the entire task to a simple binary classification problem.
+* It does not care about the reasoning or explanation, just whether the final answer is right.
+* It is most useful as a baseline performance comparison across models.
+Along with the binary metric, we also computed several supporting metrics:
+* Precision: How many of the model's positive predictions are actually correct.
+* Recall: How many of the actual positive cases the model successfully catches.
+* Weighted F1: Balances precision and recall while accounting for class imbalance.
+* Weighted F2: Puts more weight on recall than precision. This is particularly important for HRV detection because missing an actual violation (a false negative) is generally worse than incorrectly flagging something (a false positive) [15]
+When combining the above two kinds of metrics, we get an evaluation framework that not only considers language fluency of the texts generated by the model, but also its classification capabilities, including identification and HRV categorization.
+5.1.3. Interpretation of findings
+The experiments clearly indicate that fine-tuning works. Models fine-tuned on task-specific data sets related to the Russia-Ukraine war and also including Iranian (Farsi) and Venezuelan (Spanish) data sets outperform their original counterparts in terms of semantic similarity to domain-specific language and the intention behind classification labels [4].
+
+* Fine-tuning positively influences the capability of the model to analyze context and provide adequate and meaningful justification for labeling the classified item as HRV. This manifests through higher label accuracy rates and better semantic coherence of generated justifications.
+* Variability in model architecture does affect output behavior. While Instruct OpenHermes2.5 7B tends to generate more verbose and consistent output, models LLaMA 3.1 8B Instruct [1] and Mistral 7B Instruct exhibit some degree of variability in the structure of responses. Differences are explained by dissimilarities in the design of attention mechanisms and normalization processes (e.g., LLaMA's use of RMSNorm [2] vs Mistral's Grouped Query Attention).
+* The issue of hallucinations is far from solved. Although fine-tuning mitigates the problem of spurious labels, the phenomenon of generating extra information not present in the input is still observed. This affects Exact Match scores negatively and, thus, limits how much improvement could be expected. We have identified few-shot prompting as an excellent tool for decreasing variability in the output generated due to its influence on tokenization control [3].
+* Expanding the scope of the data set is important in increasing the generalizability of models trained on a limited number of samples. Currently, we are using multilingual data, yet our data set remains small enough. Adding new data would likely enhance generalization, especially for rare or ambiguous categories where training samples available to the model are too limited.
+* Although one could have expected prompt engineering not to be critical for generating stable classifications, we were surprised to find it to play such a vital role in controlling model behavior. Carefully designed prompts increase consistency across different input types and prevent ambiguity, contributing to enhanced cross-domain performance. We would suggest giving serious thought to designing such prompts to anyone attempting something similar to us [3].
+When analyzed from the perspective of parameter efficiency, LoRA indicates that you can achieve good results without fine-tuning a large portion of parameters [4]. This approach yields competitive output at substantially lower computational costs. However, one could experiment with alternative approaches, adjusting fine-tuning hyperparameters to improve robustness and the depth of analysis conducted by the model.
+
+Chapter 6: Conclusions and Future Scope
+6.1. Conclusion
+This study sought to investigate whether PEFT with LoRA would be applicable to specialize the base models of LLMs to detect Human Rights Violations with the reasoning capability, and the answer proved positive. For our study, we selected LLaMA 3.1 8B [1], Mistral 7B, and OpenHermes2.5 7B and trained them on one dataset (containing Russian-Ukrainian content), plus Iran (Farsi) and Venezuela (Spanish) datasets. In our assessment, we considered classification and reasoning capabilities through generation and classification quality [4].
+6.1.1. Effectiveness of LoRA-Based Fine-Tuning
+LoRA-based fine-tuning appears to be a genuinely practical method since it does not imply training of the full set of weights [4]:
+* The method allows storing only task-specific adapter weights and saving time and resources needed for downloading the entire model. This also makes it possible to train the model multiple times if necessary.
+* LoRA does not imply downloading and retraining of the whole base model; instead, the method allows focusing training on task-specific features..
+n short, LoRA allows using fine-tuned models with restricted computing capacities, with performance remaining acceptable compared to more demanding approaches.
+6.1.2. Model Results and Performance
+The results obtained from comparison of the three models differ in some ways:
+* OpenHermes2.5 7B demonstrates the best results in F1 and F2, thus being the most proficient classifier; moreover, Mistral proves to be quite proficient at HRV recalls [16].
+* Mistral 7B displays is in lukewarm state where results in accuracy are no less than OpenHermes but textual responses are worse than Llama 3.1
+* LLaMA 3.1 8B [1] displays worse results concerning multilingual inputs, but performs better in BLEU and ROUGE score calculation due to its generated texts being more similar to reference responses.
+The differences noted above have roots in architectural and tokenization distinctions between the studied models [2].
+6.1.3. Better performance over HRV categories
+The fine-tuned models maintained stable performance across all four HRV categories:
+* Killing
+* Catastrophe
+* Rape/Torture
+* Mistreatment
+In this regard, the metrics used in this research suggest that classification consistency was observed within each category. Nonetheless, we still believe that validation by experts is needed to make sure that the model captures the semantic context correctly [15].
+6.1.4. Architectural Generalization
+As expected, the behavior of each architecture depended on its features, including the following:
+* Grouped Query Attention (GQA) feature in Mistral and Openhermes influenced both the computational performance and output generation process [2];
+* The tokenizers' vocabulary difference directly affected multilingualism of each model;
+* The depth of reasoning varied greatly; for example, Mistral always generated the most elaborate responses..
+An important insight gained in the course of adaptation is that implementing LoRA into all three models required almost no changes but adjusting the path names. This confirms that LoRA is indeed a flexible adaption solution [4].
+6.1.5. Methodological Contributions
+The evaluation framework we developed follows a repeatable, multi-phase structure:
+* Model loading and initialization
+* Basic inference validation
+* Quantitative metric evaluation
+* Qualitative assessment through expert review
+* Feedback-driven refinement
+By using EM, BLEU, ROUGE, and classification metrics, it was possible to evaluate both textual quality and accuracy of classification, as in this case both are needed to judge the output [18].
+6.1.6. Limitations
+It is only fair to acknowledge that this research had several limitations that should be noted:
+* The number of "Yes" (violation present) samples was rather limited, and so was the number of "No" samples that could be created, creating a potential risk of overfitting that is hard to verify;
+* The categories were imbalanced; thus, while torture and rape categories included relatively few samples, other two contained much more of them;
+* Unreliable prompt processing resulted in excessively long outputs in case of Mistral, which made it hard for the model to distinguish when it needs to stop generating text;
+* The output also demonstrated a geographic bias towards Ukraine (compared to Russia). It may be caused by the bias in the training data [6].
+* Finally, Mistral 7B appeared to be the strongest overall with highest binary accuracy, BLEU, ROUGE, F1, F2, and fairness metrics..
+6.2. Future Scope
+However, we have seen that despite the limitations, stable results can be achieved. The problem now is that there is much more that could be done, namely improving the capacity of the models, increasing the dataset diversity, and enhancing the way models' performance is assessed in multilingual context.
+6.2.1. Model and Training Enhancements
+A. Advanced PEFT Techniques
+LoRA was used for our current fine-tuning process, which is good, but far from being the only available approach [4]. Some of the possible directions for future research in this regard could include:
+* QLoRA to lower the VRAM consumption, which may prove quite effective in even more constrained scenarios.
+* Different approaches based on decomposition (e.g., DoRA) and improved parameter utilization.
+* More thorough hyperparameter tuning considering such variables as the scaling factor (?), rank (r), and dropout.
+* An analysis of the trade-off between memory requirements and reasoning performance under the constraint of 30 hours per week (as on Kaggle).
+* Evaluation of the impact of quantization-aware and mixed-precision training on stability and performance..
+Such methods can lead to improvements in model performance without having to retrain the models from scratch.
+B. Larger and Multimodal Models
+All of the experiments conducted in this paper involved the use of 7B � 8B parameter models. However, scaling up seems like a natural choice:
+* Testing larger models (e.g., 13B, 14B, or even 70B parameters) will show us whether the improvement in the understanding of the context is worth the cost [1].
+* Determining the effect of scaling up on the results for different architectures would reveal whether the improvements apply universally.
+* Finding out how memory-efficient loading techniques, including sharding and offloading, can affect the scalability.
+Multimodal enhancements are equally important:
+* In many cases, an HRV report consists of both text and media content such as images and videos. Including visual elements can greatly increase detection accuracy.
+* Cross-modal reasoning would become necessary when the information contained in the text is not sufficient to reach conclusions about the situation described in an HRV report.
+That is directly relevant for real-life HRV reports.
+C. Improved Instruction Tuning
+Finally, there is a need to refine instruction tuning for better output interpretation [3]:
+* Multi-turn dialogue systems allowing for multi-step refinement of reasoning would produce more reliable outputs.
+* Specialized structures (such as step-by-step justifications) would increase clarity and provide additional value for evaluators.
+* Controlled reasoning approaches would help lower hallucinations without limiting the ability to generate coherent outputs.
+* Implementing continual learning systems to periodically fine-tune models by processing HRV reports.
+* Exploring the effects of using different prompts and creating templates..
+These improvements are all aimed at making outputs more interpretable and stable, regardless of the input variety.
+
+6.2.2. Dataset and Evaluation Improvements
+A. Dataset Expansion
+Currently, the dataset is one of the biggest bottlenecks in the project. Therefore, further work should include:
+* A significant increase in the dataset size to ensure better generalization, our current dataset size is workable but by far not optimal.
+* Expanding the multilingual dataset to fill gaps with regards to Russian, Farsi, and Spanish languages.
+* The inclusion of additional balanced samples for HRV categories, especially underrepresented torture and sexual violence categories.
+* The use of a broader set of sources, including Telegram, institutional reports, independent documentation, and other social media platforms.
+At the same time, bias reduction will be required:
+* The use of frameworks such as WEIRD (Western, Educated, Industrialized, Rich, Democratic) for identifying dataset imbalances and their subsequent correction [6].
+* The inclusion of non-Western sources to mitigate potential cultural bias in the system's outputs.
+* The introduction of controlled sampling techniques to better balance class distribution.
+B. Advanced Evaluation Metrics
+Our current evaluation strategy utilizes standard NLP and classification metrics; however, we can expand our approach by using:
+* LLM-as-judge evaluation frameworks that allow assessing the quality of open-ended reasoning that cannot be evaluated automatically [23].
+* The introduction of hybrid metrics to assess the semantics of generated texts and their classification accuracy simultaneously.
+* Uncertainty calibration by assigning confidence scores ranging between 1 and 5 to model predictions to inform users of how much they should trust the output.
+* Analysis of uncertainty calibration reliability to ensure correlation between model confidence and its accuracy.
+* The introduction of fairness-aware metrics such as demographic parity, equal opportunity, and group disparity to formalize our bias evaluation process [8].
+These improvements will enable us to evaluate not only the accuracy of our models' predictions but also their deeper semantics and fairness.
+6.2.3. Bias, Fairness, and Ethical Safeguards
+A. Bias Detection and Mitigation
+Bias is one of the most important factors that we need to take into account for this project [6]. Further steps might include:
+* Testing the model adversarially with culturally sensitive and region-specific prompts that can uncover implicit biases of the model.
+* The analysis of prediction patterns in multiple datasets, particularly those related to Russia-Ukraine war, Iran, and Venezuela, to determine whether our model assigns blame disproportionally depending on geopolitical circumstances.
+* The identification and recording of cases of systematic misclassification to build credibility within the model.
+* Bias mitigation techniques, such as fine-tuning of LoRA adapters or reinforcement-based alignment, may prove effective in addressing existing issues [4].
+* Monitoring fairness metrics continuously during both training and evaluation stages of the project.
+It is crucial that we do not overlook the risk of biases as they can lead to a system that perpetuates them rather than protecting human rights.
+
+B. Explainability Tools
+For our system to gain trust and be deployed in real-life situations, it is important to incorporate interpretability into its operation. Further steps may include:
+* The use of tools such as SHAP and LIME to analyze the importance of features and decision boundaries of our model.
+* The generation of structured and human-readable explanations for each model's prediction to make it usable for human rights practitioners.
+* The comparison of model reasoning with human experts to pinpoint areas of inconsistency and lack of understanding in the model.
+* The development of visualization tools that would enable us to trace the impact of inputs on outputs of our model.
+Improved interpretability of our system is not an option but an absolute necessity [8].
+In conclusion, the development of our project will proceed by expanding the dataset and using parameter-efficient training methodologies. Furthermore, it is important to adopt a robust framework for model evaluation that includes fairness and interpretability. Our aim is to develop models that are accurate, reliable, interpretable, and unbiased when working in multilingual and cross-cultural contexts. We are confident that we have established solid foundations for reaching these goals.
